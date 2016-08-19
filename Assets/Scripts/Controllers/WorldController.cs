@@ -15,6 +15,7 @@ using MoonSharp.Interpreter;
 using Scheduler;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using JobUtils;
 using Random = UnityEngine.Random;
 
 [MoonSharpUserData]
@@ -141,6 +142,8 @@ public class WorldController : MonoBehaviour
         go.name = "ContextMenu";
     }
 
+    bool hasTestedGoalResolver = false;
+
     public void Update()
     {
         // Systems that update every frame.
@@ -170,6 +173,13 @@ public class WorldController : MonoBehaviour
         }
 
         soundController.Update(Time.deltaTime);
+
+        if (!hasTestedGoalResolver)
+        {
+            hasTestedGoalResolver = true;
+            GoalResolver g = new JobUtils.GoalResolver();
+            g.DoThings();
+        }
     }
 
     /// <summary>

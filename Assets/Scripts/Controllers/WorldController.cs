@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.Xml.Serialization;
 using System.IO;
+using JobUtils;
 
 public class WorldController : MonoBehaviour
 {
@@ -124,6 +125,8 @@ public class WorldController : MonoBehaviour
 
     }
 
+    bool hasTestedGoalResolver = false;
+
     void Update()
     {
         mouseController.Update(IsModal);
@@ -137,6 +140,13 @@ public class WorldController : MonoBehaviour
 
         questController.Update(Time.deltaTime);
         soundController.Update(Time.deltaTime);
+
+        if (!hasTestedGoalResolver)
+        {
+            hasTestedGoalResolver = true;
+            GoalResolver g = new JobUtils.GoalResolver();
+            g.DoThings();
+        }
     }
 
     /// <summary>

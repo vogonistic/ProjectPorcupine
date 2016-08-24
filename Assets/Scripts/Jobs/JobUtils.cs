@@ -11,14 +11,14 @@ namespace JobUtils
         static string SteelPlateResource = "Steel Plate";
 
         #if true
-        private void Trace(string message)
+        void Trace(string message)
         {
             Debug.Log("JOB UTILS: " + message);
             // Doesn't do multi line messages:
 //            Debug.ULogChannel("JobUtils", message);
         }
         #else
-        private void Trace(string message) {
+        void Trace(string message) {
         }
         #endif
 
@@ -44,7 +44,7 @@ namespace JobUtils
             }
             else
             {
-                Trace("No path found :sad:");            
+                Trace("No path found :sad:");
             }
         }
 
@@ -53,6 +53,9 @@ namespace JobUtils
         {
             // Turn it into a PathToGoal and queue it.
             PathToGoal path = new PathToGoal(g);
+
+            int maxIteration = 20;
+            int currentInteration = 0;
 
             if (path.IsDone())
                 return path;
@@ -64,6 +67,9 @@ namespace JobUtils
             PathToGoal currentPath;
             do
             {
+                if (++currentInteration >= maxIteration)
+                    break;
+
                 // Fetch the top path.
                 currentPath = pathsToExplore.Dequeue();
                 Trace("dequeued:\n" + currentPath);
@@ -122,7 +128,7 @@ namespace JobUtils
                     actions.Add(ac);
                 }
             }
-                
+
             Trace(string.Format(" - Found {0} actions", actions.Count));
             return actions;
         }
@@ -136,7 +142,7 @@ namespace JobUtils
             {
                 if (c.Type == InventoryType && c.Name == SteelPlateResource)
                 {
-                    Action smelt = new Action("Forge Iron to Steel", 2, new Vector2(0, 20));
+                    Action smelt = new Action("Forge Iron to Steel", 2 + 20, new Vector2(0, 20));
                     smelt.AddProvides(new Condition(InventoryType, SteelPlateResource, 1));
                     smelt.AddRequirement(new Condition(InventoryType, IronOreResource, 1));
                     actions.Add(smelt);
@@ -160,7 +166,7 @@ namespace JobUtils
         // Conditions that are fulfilled.
         public List<Condition> Fulfilled = new List<Condition>();
         // List of found actions
-        public List<Action> Actions = new List<Action>();
+        public Queue<Action> Actions = new Queue<Action>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JobUtils.PathToGoal"/> class.
@@ -183,30 +189,48 @@ namespace JobUtils
             CostInTime = other.CostInTime + action.CostInTime;
 
             // We start with a clean copy
-            Unfulfilled = other.Unfulfilled;
-            Fulfilled = other.Fulfilled;
-            Actions = other.Actions;
+            Unfulfilled = new List<Condition>(other.Unfulfilled.Count);
+            Fulfilled = new List<Condition>(other.Fulfilled);
+            Actions = new Queue<Action>(other.Actions);
 
-            // Lets apply the new action
-            foreach (Condition provided in action.Provides)
+            // Start: [Goal name: Build a Wall, location: (0.0, 0.0), requires: ([Condition type: inventory, name: Steel Plate, details: (5))]
+
+            // End:
+            // [PathToGoal cost: 42
+            //   [Goal name: Build a Wall, location: (0.0, 0.0), requires: ([Condition type: inventory, name: Steel Plate, details: (5))]
+            //   Fulfilled:
+            //     [Condition type: inventory, name: Steel Plate, details: (1)
+            //     [Condition type: inventory, name: Iron Ore, details: (1)
+            //   Actions:
+            //     [Action name: Forge Iron to Steel, cost: 22, location: (0.0, 20.0)]
+            //     [Action name: Fetch Iron Ore, cost: 20, location: (20.0, 0.0)]
+            // ]
+
+
+            // Loop over all the things that was previously unfulfilled and test if they still are.
+            foreach (Condition uf in other.Unfulfilled)
             {
-                foreach (Condition want in Unfulfilled.ToArray())
+                foreach (Condition provided in action.Provides)
                 {
-                    if (want.Type == provided.Type && want.Name == provided.Name)
+                    if (uf.Equals(provided))
                     {
-                        // TODO: We don't deal with the amount
-                        Unfulfilled.Remove(provided);
                         Fulfilled.Add(provided);
+                        Debug.Log(" - Fulfilled: " + uf);
+                    }
+                    else
+                    {
+                        Unfulfilled.Add(uf);
+                        Debug.Log(" - Unfulfilled: " + uf);
                     }
                 }
             }
-            
+
             foreach (Condition required in action.Requires)
             {
                 Unfulfilled.Add(required);
             }
 
-            Actions.Add(action);
+            Actions.Enqueue(action);
         }
 
         public bool IsDone()
@@ -264,7 +288,7 @@ namespace JobUtils
 
             if (Requires.Count > 0)
                 requiredString = string.Join(", ", Requires.Select(r => r.ToString()).ToArray());
-            
+
             return string.Format("[Goal name: {0}, location: {1}, requires: ({2})]", Name, Location, requiredString);
         }
     }
@@ -274,7 +298,7 @@ namespace JobUtils
         public string Name;
         public int CostInTime;
         public Vector2 Location;
-                    
+
         public List<Condition> Requires = new List<Condition>();
         public List<Condition> Provides = new List<Condition>();
 
@@ -327,6 +351,12 @@ namespace JobUtils
                 detailsString = string.Join(", ", Details.Select(d => d.ToString()).ToArray());
 
             return string.Format("[Condition type: {0}, name: {1}, details: ({2})", Type, Name, detailsString);
+        }
+
+        public bool Equals(Condition other)
+        {
+            // Return true if the fields match:
+            return Type == other.Type && Name == other.Name;
         }
     }
 

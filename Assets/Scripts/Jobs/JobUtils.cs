@@ -6,6 +6,10 @@ namespace JobUtils
 {
     public class GoalResolver
     {
+        static string InventoryType = "inventory";
+        static string IronOreResource = "Iron Ore";
+        static string SteelPlateResource = "Steel Plate";
+
         #if true
         private void Trace(string message)
         {
@@ -28,8 +32,9 @@ namespace JobUtils
         {
             // Add the fetch action
             PossibleActions.Add(FetchAction);
+            PossibleActions.Add(SmeltAction);
             // Get needs steel plates
-            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), new Condition("inventory", "Steel Plate", 5));
+            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), new Condition(InventoryType, SteelPlateResource, 5));
             Trace("Starting with goal: " + buildAWall);
 
             PathToGoal path = Resolve(buildAWall);
@@ -68,6 +73,10 @@ namespace JobUtils
                 {
                     // Find all the possible paths they return.
                     List<Action> actions = actionFinder(currentPath.Unfulfilled);
+
+                    if (actions == null)
+                        continue;
+
                     foreach (Action nextAction in actions)
                     {
                         // Create a new path for each.
@@ -94,14 +103,14 @@ namespace JobUtils
         /// <param name="conditions">Conditions to fulfill</param>
         List<Action> FetchAction(List<Condition> conditions)
         {
+            Trace("Testing Fetch Actions");
             // Crazy hardcoded
-            string type = "inventory";
-            string resourceWeHave = "Steel Plate";
+            string resourceWeHave = IronOreResource;
             List<Action> actions = new List<Action>();
             // Check if they want a steel plate
             foreach (Condition c in conditions)
             {
-                if (c.Type == type && c.Name == resourceWeHave)
+                if (c.Type == InventoryType && c.Name == resourceWeHave)
                 {
                     Action ac = new Action(
                                     "Fetch " + resourceWeHave,
@@ -114,7 +123,28 @@ namespace JobUtils
                 }
             }
                 
-            return actions.Count > 0 ? actions : null;
+            Trace(string.Format(" - Found {0} actions", actions.Count));
+            return actions;
+        }
+
+
+        List<Action> SmeltAction(List<Condition> conditions)
+        {
+            Trace("Testing Smelt Actions");
+            List<Action> actions = new List<Action>();
+            foreach (Condition c in conditions)
+            {
+                if (c.Type == InventoryType && c.Name == SteelPlateResource)
+                {
+                    Action smelt = new Action("Forge Iron to Steel", 2, new Vector2(0, 20));
+                    smelt.AddProvides(new Condition(InventoryType, SteelPlateResource, 1));
+                    smelt.AddRequirement(new Condition(InventoryType, IronOreResource, 1));
+                    actions.Add(smelt);
+                }
+            }
+
+            Trace(string.Format(" - Found {0} actions", actions.Count));
+            return actions;
         }
     }
 
@@ -253,6 +283,11 @@ namespace JobUtils
             Name = name;
             CostInTime = costInTime;
             Location = location;
+        }
+
+        public Action Copy()
+        {
+            return new Action(Name, CostInTime, Location);
         }
 
         public void AddRequirement(Condition c)

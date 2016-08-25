@@ -8,6 +8,7 @@ namespace JobUtils
     {
         static string InventoryType = "inventory";
         static string IronOreResource = "Iron Ore";
+        static string IceResource = "Ice";
         static string SteelPlateResource = "Steel Plate";
 
         #if true
@@ -34,7 +35,7 @@ namespace JobUtils
             PossibleActions.Add(FetchAction);
             PossibleActions.Add(SmeltAction);
             // Get needs steel plates
-            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), new Condition(InventoryType, SteelPlateResource, 5));
+            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), new Condition(InventoryType, SteelPlateResource, 5), new Condition(InventoryType, IceResource, 50));
             Trace("Starting with goal: " + buildAWall);
 
             PathToGoal path = Resolve(buildAWall);
@@ -113,20 +114,36 @@ namespace JobUtils
             Trace("Testing Fetch Actions");
             // Crazy hardcoded
             string resourceWeHave = IronOreResource;
+            string resourceWeHave2 = IceResource;
             List<Action> actions = new List<Action>();
             // Check if they want a steel plate
             foreach (Condition c in conditions)
             {
-                if (c.Type == InventoryType && c.Name == resourceWeHave)
+                if (c.Type == InventoryType)
                 {
-                    Action ac = new Action(
-                                    "Fetch " + resourceWeHave,
-                                    20,
-                                    new Vector2(20, 0)
-                                );
+                    if (c.Name == resourceWeHave)
+                    {
+                        Action ac = new Action(
+                            "Fetch " + resourceWeHave,
+                            20,
+                            new Vector2(20, 0)
+                        );
 
-                    ac.AddProvides(c);
-                    actions.Add(ac);
+                        ac.AddProvides(c);
+                        actions.Add(ac);
+                    }// This is the really lazy test code way of doing this.
+                    // DO NOT DO IT THIS WAY. :)
+                    else if (c.Name == resourceWeHave2)
+                    {
+                        Action ac = new Action(
+                            "Fetch " + resourceWeHave2,
+                            50,
+                            new Vector2(50, 0)
+                        );
+
+                        ac.AddProvides(c);
+                        actions.Add(ac);
+                    }
                 }
             }
 
@@ -142,8 +159,8 @@ namespace JobUtils
             foreach (Condition c in conditions)
             {
                 if (c.Type == InventoryType && c.Name == SteelPlateResource)
-                {
-                    Action smelt = new Action("Forge Iron to Steel", 2 + 20, new Vector2(0, 20));
+                {// we need something better than casting details [0] to an int!
+                    Action smelt = new Action("Forge Iron to Steel", (int)c.Details[0] * 2 + 20, new Vector2(0, 20));
                     smelt.AddProvides(new Condition(InventoryType, SteelPlateResource, 1));
                     smelt.AddRequirement(new Condition(InventoryType, IronOreResource, 1));
                     actions.Add(smelt);

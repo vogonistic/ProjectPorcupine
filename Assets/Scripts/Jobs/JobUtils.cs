@@ -60,9 +60,10 @@ namespace JobUtils
             if (path.IsDone())
                 return path;
 
-            // Should probably use a priority queue here. Based on CostInTime?
-            Queue<PathToGoal> pathsToExplore = new Queue<PathToGoal>();
-            pathsToExplore.Enqueue(path);
+            // Should we rename this so that it is a bit more general?
+            // Because it does not contain anything inherently pathfindy.
+            PathfindingPriorityQueue<PathToGoal> pathsToExplore = new PathfindingPriorityQueue<PathToGoal>();
+            pathsToExplore.Enqueue(path, path.CostInTime);
 
             PathToGoal currentPath;
             do
@@ -93,7 +94,7 @@ namespace JobUtils
                             return newPath;
 
                         // Nope, not finished. Put it on the queue.
-                        pathsToExplore.Enqueue(newPath);
+                        pathsToExplore.Enqueue(newPath, newPath.CostInTime);
                     }
                 }
             } while (pathsToExplore.Count > 0);
@@ -166,6 +167,8 @@ namespace JobUtils
         // Conditions that are fulfilled.
         public List<Condition> Fulfilled = new List<Condition>();
         // List of found actions
+        // Should we make this a priority queue?
+        // Then it would automatically find the shortest set of actions? ... Not sure about that.
         public Queue<Action> Actions = new Queue<Action>();
 
         /// <summary>

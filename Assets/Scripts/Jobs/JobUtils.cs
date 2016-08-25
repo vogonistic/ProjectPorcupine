@@ -188,19 +188,19 @@ namespace JobUtils
             Goal = other.Goal;
             CostInTime = other.CostInTime + action.CostInTime;
 
-            // We start with a clean copy
-            Unfulfilled = new List<Condition>(other.Unfulfilled.Count);
+            // We start with the requirements of the action so as to not have to loop afterwards to add them.
+            Unfulfilled = new List<Condition>(action.Requires);
             Fulfilled = new List<Condition>(other.Fulfilled);
             Actions = new Queue<Action>(other.Actions);
 
-            // Start: [Goal name: Build a Wall, location: (0.0, 0.0), requires: ([Condition type: inventory, name: Steel Plate, details: (5))]
+            // Start: [Goal name: Build a Wall, location: (0.0, 0.0), requires: ([Condition type: inventory, name: Steel Plate, details: (5)])]
 
             // End:
             // [PathToGoal cost: 42
             //   [Goal name: Build a Wall, location: (0.0, 0.0), requires: ([Condition type: inventory, name: Steel Plate, details: (5))]
             //   Fulfilled:
-            //     [Condition type: inventory, name: Steel Plate, details: (1)
-            //     [Condition type: inventory, name: Iron Ore, details: (1)
+            //     [Condition type: inventory, name: Steel Plate, details: (1)]
+            //     [Condition type: inventory, name: Iron Ore, details: (1)]
             //   Actions:
             //     [Action name: Forge Iron to Steel, cost: 22, location: (0.0, 20.0)]
             //     [Action name: Fetch Iron Ore, cost: 20, location: (20.0, 0.0)]
@@ -210,24 +210,21 @@ namespace JobUtils
             // Loop over all the things that was previously unfulfilled and test if they still are.
             foreach (Condition uf in other.Unfulfilled)
             {
+                bool fulfilled = false;
                 foreach (Condition provided in action.Provides)
-                {
+                {// Do not add to unfulfilled in the loop as that will be bad for multiple provides (In case it is a thing.)
                     if (uf.Equals(provided))
                     {
+                        fulfilled = true;
                         Fulfilled.Add(provided);
                         Debug.Log(" - Fulfilled: " + uf);
-                    }
-                    else
-                    {
-                        Unfulfilled.Add(uf);
-                        Debug.Log(" - Unfulfilled: " + uf);
+                        break;
                     }
                 }
-            }
-
-            foreach (Condition required in action.Requires)
-            {
-                Unfulfilled.Add(required);
+                if (fulfilled == false) {
+                    Unfulfilled.Add(uf);
+                    Debug.Log(" - Unfulfilled: " + uf);
+                }
             }
 
             Actions.Enqueue(action);
@@ -350,7 +347,7 @@ namespace JobUtils
             if (Details.Count > 0)
                 detailsString = string.Join(", ", Details.Select(d => d.ToString()).ToArray());
 
-            return string.Format("[Condition type: {0}, name: {1}, details: ({2})", Type, Name, detailsString);
+            return string.Format("[Condition type: {0}, name: {1}, details: ({2})]", Type, Name, detailsString);
         }
 
         public bool Equals(Condition other)

@@ -2,6 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 
+// We need to make Condition into an interface.
+// Need to be able to split InventoryConditions based on count
+// In XML version, add parameter for max on input and output (inventory prefab has default max stack size)
+// Need to take walking into account. I.e. if you need ice and steel, go fetch one, drop it off, fetch second, drop it off. Different path from being able to carry both.
+// Add code that can figure out if we need to drop off inventory or can pick up more
+// Let the Character modify cost for path and action
+// Split into 1 class per file
+// Integrate into game
+
 namespace JobUtils
 {
     public class GoalResolver
@@ -124,10 +133,10 @@ namespace JobUtils
                     if (c.Name == resourceWeHave)
                     {
                         Action ac = new Action(
-                            "Fetch " + resourceWeHave,
-                            20,
-                            new Vector2(20, 0)
-                        );
+                                        "Fetch " + resourceWeHave,
+                                        20,
+                                        new Vector2(20, 0)
+                                    );
 
                         ac.AddProvides(c);
                         actions.Add(ac);
@@ -136,10 +145,10 @@ namespace JobUtils
                     else if (c.Name == resourceWeHave2)
                     {
                         Action ac = new Action(
-                            "Fetch " + resourceWeHave2,
-                            50,
-                            new Vector2(50, 0)
-                        );
+                                        "Fetch " + resourceWeHave2,
+                                        50,
+                                        new Vector2(50, 0)
+                                    );
 
                         ac.AddProvides(c);
                         actions.Add(ac);
@@ -241,7 +250,8 @@ namespace JobUtils
                         break;
                     }
                 }
-                if (fulfilled == false) {
+                if (fulfilled == false)
+                {
                     Unfulfilled.Add(uf);
                     Debug.Log(" - Unfulfilled: " + uf);
                 }

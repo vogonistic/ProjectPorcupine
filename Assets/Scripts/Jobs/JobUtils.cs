@@ -15,7 +15,6 @@ namespace JobUtils
 {
     public class GoalResolver
     {
-        static string InventoryType = "inventory";
         static string IronOreResource = "Iron Ore";
         static string IceResource = "Ice";
         static string SteelPlateResource = "Steel Plate";
@@ -44,7 +43,10 @@ namespace JobUtils
             PossibleActions.Add(FetchAction);
             PossibleActions.Add(SmeltAction);
             // Get needs steel plates
-            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), new Condition(InventoryType, SteelPlateResource, 5), new Condition(InventoryType, IceResource, 50));
+            NeedsDictionary needs = new NeedsDictionary();
+            needs.AddN(SteelPlateResource, 5);
+            needs.AddN(IceResource, 50);
+            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), needs);
             Trace("Starting with goal: " + buildAWall);
 
             PathToGoal path = Resolve(buildAWall);
@@ -126,34 +128,25 @@ namespace JobUtils
             string resourceWeHave2 = IceResource;
             List<Action> actions = new List<Action>();
             // Check if they want a steel plate
-            foreach (Condition c in conditions)
-            {
-                if (c.Type == InventoryType)
-                {
-                    if (c.Name == resourceWeHave)
-                    {
-                        Action ac = new Action(
-                                        "Fetch " + resourceWeHave,
-                                        20,
-                                        new Vector2(20, 0)
-                                    );
+            if (conditions.Value(resourceWeHave) > 0) {
+                Action ac = new Action(
+                    "Fetch " + resourceWeHave,
+                    20,
+                    new Vector2(20, 0)
+                );
 
-                        ac.AddProvides(c);
-                        actions.Add(ac);
-                    }// This is the really lazy test code way of doing this.
-                    // DO NOT DO IT THIS WAY. :)
-                    else if (c.Name == resourceWeHave2)
-                    {
-                        Action ac = new Action(
-                                        "Fetch " + resourceWeHave2,
-                                        50,
-                                        new Vector2(50, 0)
-                                    );
+                ac.AddNProvides(resourceWeHave, 50);
+                actions.Add(ac);
+            }
+            if (conditions.Value(resourceWeHave2) > 0) {
+                Action ac = new Action(
+                    "Fetch " + resourceWeHave2,
+                    20,
+                    new Vector2(20, 0)
+                );
 
-                        ac.AddProvides(c);
-                        actions.Add(ac);
-                    }
-                }
+                ac.AddNProvides(resourceWeHave2, 50);
+                actions.Add(ac);
             }
 
             Trace(string.Format(" - Found {0} actions", actions.Count));
@@ -165,15 +158,13 @@ namespace JobUtils
         {
             Trace("Testing Smelt Actions");
             List<Action> actions = new List<Action>();
-            foreach (Condition c in conditions)
+            int value = conditions.Value(SteelPlateResource);
+            if (value > 0)
             {
-                if (c.Type == InventoryType && c.Name == SteelPlateResource)
-                {// we need something better than casting details [0] to an int!
-                    Action smelt = new Action("Forge Iron to Steel", (int)c.Details[0] * 2 + 20, new Vector2(0, 20));
-                    smelt.AddProvides(new Condition(InventoryType, SteelPlateResource, 1));
-                    smelt.AddRequirement(new Condition(InventoryType, IronOreResource, 1));
-                    actions.Add(smelt);
-                }
+                Action smelt = new Action("Forge Iron to Steel", value * 2 + 20, new Vector2(0, 20));
+                smelt.AddNProvides(SteelPlateResource, value);
+                smelt.AddNRequirements(IronOreResource, value);
+                actions.Add(smelt);
             }
 
             Trace(string.Format(" - Found {0} actions", actions.Count));
@@ -219,8 +210,9 @@ namespace JobUtils
 
             // We start with the requirements of the action so as to not have to loop afterwards to add them.
             Unfulfilled = new NeedsDictionary(other.Unfulfilled);
-            Unfulfilled += action.Requires;// Not entierly sure about this code...
+            // Not entierly sure about this code...
             Unfulfilled -= action.Provides;
+            Unfulfilled += action.Requires;
             Fulfilled = new NeedsDictionary(other.Fulfilled);
             Actions = new Queue<Action>(other.Actions); // Should this also be value based?
 
@@ -236,30 +228,6 @@ namespace JobUtils
             //     [Action name: Forge Iron to Steel, cost: 22, location: (0.0, 20.0)]
             //     [Action name: Fetch Iron Ore, cost: 20, location: (20.0, 0.0)]
             // ]
-
-
-            // Loop over all the things that was previously unfulfilled and test if they still are.
-          /*  foreach (Condition uf in other.Unfulfilled)
-            {
-                bool fulfilled = false;
-                foreach (Condition provided in action.Provides)
-                {// Do not add to unfulfilled in the loop as that will be bad for multiple provides (In case it is a thing.)
-                    if (uf.Equals(provided))
-                    {
-                        fulfilled = true;
-                        Fulfilled.Add(provided);
-                        Debug.Log(" - Fulfilled: " + uf);
-                        break;
-                    }
-                }
-                if (fulfilled == false)
-                {
-                    Unfulfilled.Add(uf);
-                    Debug.Log(" - Unfulfilled: " + uf);
-                }
-            }*/
-
-
 
             Actions.Enqueue(action);
         }
@@ -299,11 +267,11 @@ namespace JobUtils
         public NeedsDictionary Requires;
         public Vector2 Location;
 
-        public Goal(string name, Vector2 location, params Condition[] requirements)
+        public Goal(string name, Vector2 location, NeedsDictionary needs)
         {
             Name = name;
             Location = location;
-            Requires = new NeedsDictionary(requirements);
+            Requires = needs;
         }
 
         public Goal(Goal other)
@@ -315,12 +283,7 @@ namespace JobUtils
 
         public override string ToString()
         {
-            string requiredString = "";
-
-            if (Requires.Count > 0)
-                requiredString = Requires.ToString();
-
-            return string.Format("[Goal name: {0}, location: {1}, requires: ({2})]", Name, Location, requiredString);
+            return string.Format("[Goal name: {0}, location: {1}, requires: ({2})]", Name, Location, Requires);
         }
     }
 
@@ -345,14 +308,24 @@ namespace JobUtils
             return new Action(Name, CostInTime, Location);
         }
 
-        public void AddRequirement(Condition c)
+        public void AddRequirement(string c)
         {
             Requires.Add(c);
         }
 
-        public void AddProvides(Condition c)
+        public void AddNRequirements(string c, int n)
+        {
+            Requires.AddN(c, n);
+        }
+
+        public void AddProvides(string c)
         {
             Provides.Add(c);
+        }
+
+        public void AddNProvides(string c, int n)
+        {
+            Provides.AddN(c, n);
         }
 
         public override string ToString()
@@ -360,35 +333,4 @@ namespace JobUtils
             return string.Format("[Action name: {0}, cost: {1}, location: {2}]", Name, CostInTime, Location.ToString());
         }
     }
-
-    public class Condition
-    {
-        public string Type;
-        public string Name;
-        public List<object> Details;
-
-        public Condition(string type, string name, params object[] details)
-        {
-            Type = type;
-            Name = name;
-            Details = new List<object>(details);
-        }
-
-        public override string ToString()
-        {
-            string detailsString = "";
-
-            if (Details.Count > 0)
-                detailsString = string.Join(", ", Details.Select(d => d.ToString()).ToArray());
-
-            return string.Format("[Condition type: {0}, name: {1}, details: ({2})]", Type, Name, detailsString);
-        }
-
-        public bool Equals(Condition other)
-        {
-            // Return true if the fields match:
-            return Type == other.Type && Name == other.Name;
-        }
-    }
-
 }

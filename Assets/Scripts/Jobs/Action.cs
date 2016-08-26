@@ -25,24 +25,14 @@ namespace JobUtils
             return new Action(Name, CostInTime, Location);
         }
 
-        public void AddRequirement(string c)
+        public void AddRequirement(string c, int n = 1)
         {
-            Requires.Add(c);
+            Requires.Add(c, n);
         }
-
-        public void AddNRequirements(string c, int n)
+            
+        public void AddProvides(string c, int n = 1)
         {
-            Requires.AddN(c, n);
-        }
-
-        public void AddProvides(string c)
-        {
-            Provides.Add(c);
-        }
-
-        public void AddNProvides(string c, int n)
-        {
-            Provides.AddN(c, n);
+            Provides.Add(c, n);
         }
 
         public override string ToString()

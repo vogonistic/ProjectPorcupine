@@ -33,7 +33,7 @@ namespace JobUtils
         #endif
 
         // Function delegate for returning possible actions.
-        public delegate List<Action> ActionDelegate(List<Condition> conditions);
+        public delegate List<Action> ActionDelegate(NeedsDictionary conditions);
         // Contains a list of functions that checks for possible actions.
         List<ActionDelegate> PossibleActions = new List<ActionDelegate>();
 
@@ -118,7 +118,7 @@ namespace JobUtils
         /// </summary>
         /// <returns>A list of actions</returns>
         /// <param name="conditions">Conditions to fulfill</param>
-        List<Action> FetchAction(List<Condition> conditions)
+        List<Action> FetchAction(NeedsDictionary conditions)
         {
             Trace("Testing Fetch Actions");
             // Crazy hardcoded
@@ -161,7 +161,7 @@ namespace JobUtils
         }
 
 
-        List<Action> SmeltAction(List<Condition> conditions)
+        List<Action> SmeltAction(NeedsDictionary conditions)
         {
             Trace("Testing Smelt Actions");
             List<Action> actions = new List<Action>();
@@ -189,9 +189,9 @@ namespace JobUtils
         public int CostInTime;
 
         // Conditions not yet fulfilled.
-        public List<Condition> Unfulfilled;
+        public NeedsDictionary Unfulfilled;
         // Conditions that are fulfilled.
-        public List<Condition> Fulfilled = new List<Condition>();
+        public NeedsDictionary Fulfilled = new NeedsDictionary();
         // List of found actions
         // Should we make this a priority queue?
         // Then it would automatically find the shortest set of actions? ... Not sure about that.
@@ -218,9 +218,11 @@ namespace JobUtils
             CostInTime = other.CostInTime + action.CostInTime;
 
             // We start with the requirements of the action so as to not have to loop afterwards to add them.
-            Unfulfilled = new List<Condition>(action.Requires);
-            Fulfilled = new List<Condition>(other.Fulfilled);
-            Actions = new Queue<Action>(other.Actions);
+            Unfulfilled = new NeedsDictionary(other.Unfulfilled);
+            Unfulfilled += action.Requires;// Not entierly sure about this code...
+            Unfulfilled -= action.Provides;
+            Fulfilled = new NeedsDictionary(other.Fulfilled);
+            Actions = new Queue<Action>(other.Actions); // Should this also be value based?
 
             // Start: [Goal name: Build a Wall, location: (0.0, 0.0), requires: ([Condition type: inventory, name: Steel Plate, details: (5)])]
 
@@ -237,7 +239,7 @@ namespace JobUtils
 
 
             // Loop over all the things that was previously unfulfilled and test if they still are.
-            foreach (Condition uf in other.Unfulfilled)
+          /*  foreach (Condition uf in other.Unfulfilled)
             {
                 bool fulfilled = false;
                 foreach (Condition provided in action.Provides)
@@ -255,7 +257,9 @@ namespace JobUtils
                     Unfulfilled.Add(uf);
                     Debug.Log(" - Unfulfilled: " + uf);
                 }
-            }
+            }*/
+
+
 
             Actions.Enqueue(action);
         }
@@ -270,12 +274,12 @@ namespace JobUtils
             string output = "[PathToGoal cost: " + CostInTime + "\n  " + Goal + "\n";
             if (Unfulfilled.Count > 0)
             {
-                output += "  Unfulfilled:\n    " + string.Join("\n    ", Unfulfilled.Select(x => x.ToString()).ToArray()) + "\n";
+                output += "  Unfulfilled:\n    " + Unfulfilled.ToString() + "\n";
             }
 
             if (Fulfilled.Count > 0)
             {
-                output += "  Fulfilled:\n    " + string.Join("\n    ", Fulfilled.Select(x => x.ToString()).ToArray()) + "\n";
+                output += "  Fulfilled:\n    " + Fulfilled.ToString() + "\n";
             }
 
             if (Actions.Count > 0)
@@ -292,14 +296,14 @@ namespace JobUtils
     public class Goal
     {
         public string Name;
-        public List<Condition> Requires;
+        public NeedsDictionary Requires;
         public Vector2 Location;
 
         public Goal(string name, Vector2 location, params Condition[] requirements)
         {
             Name = name;
             Location = location;
-            Requires = new List<Condition>(requirements);
+            Requires = new NeedsDictionary(requirements);
         }
 
         public Goal(Goal other)
@@ -314,7 +318,7 @@ namespace JobUtils
             string requiredString = "";
 
             if (Requires.Count > 0)
-                requiredString = string.Join(", ", Requires.Select(r => r.ToString()).ToArray());
+                requiredString = Requires.ToString();
 
             return string.Format("[Goal name: {0}, location: {1}, requires: ({2})]", Name, Location, requiredString);
         }
@@ -326,8 +330,8 @@ namespace JobUtils
         public int CostInTime;
         public Vector2 Location;
 
-        public List<Condition> Requires = new List<Condition>();
-        public List<Condition> Provides = new List<Condition>();
+        public NeedsDictionary Requires = new NeedsDictionary();
+        public NeedsDictionary Provides = new NeedsDictionary();
 
         public Action(string name, int costInTime, Vector2 location)
         {

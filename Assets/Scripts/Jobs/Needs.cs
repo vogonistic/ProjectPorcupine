@@ -9,6 +9,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ProjectPorcupine.Jobs
 {
@@ -63,7 +64,7 @@ namespace ProjectPorcupine.Jobs
             {
                 if (b.Value(key) > 0)
                 {
-                    ret.Add(key, a.data[key] + b.data[key]);
+                    ret.Add(key, Mathf.Max(a.data[key], b.data[key]) - Mathf.Min(a.data[key], b.data[key]));
                 }
             }
 

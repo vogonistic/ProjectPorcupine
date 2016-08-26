@@ -188,7 +188,6 @@ namespace ProjectPorcupine.Jobs
 
                     if (inventoryBeforeChanges.ContainsKey(path.EndTile()) == false)
                     {
-                        Trace(newInventory.objectType + " - " + newInventory.stackSize);
                         inventoryBeforeChanges.Add(path.EndTile(), newInventory);
                     }
 

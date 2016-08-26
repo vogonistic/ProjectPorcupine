@@ -177,7 +177,7 @@ public class WorldController : MonoBehaviour
         if (!hasTestedGoalResolver)
         {
             hasTestedGoalResolver = true;
-            new ProjectPorcupine.Jobs.Resolver().DoThings();
+            new ProjectPorcupine.Jobs.Resolver(world.inventoryManager).DoThings();
         }
     }
 

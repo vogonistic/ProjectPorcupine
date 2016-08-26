@@ -42,7 +42,7 @@ namespace ProjectPorcupine.Jobs
 
         public override string ToString()
         {
-            return string.Format("[Action name: {0}, cost: {1}, tile: {2}]", Name, Cost, Tile);
+            return string.Format("[Action name: {0}, cost: {1}, tile: ({2},{3})]", Name, Cost, Tile.X, Tile.Y);
         }
     }
 }

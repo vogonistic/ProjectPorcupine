@@ -29,6 +29,10 @@ namespace ProjectPorcupine.Jobs
         /// List of found actions
         public Queue<Action> Actions = new Queue<Action>();
 
+        //I do not like this but for now I will keep it like this... It should also only save the coordnates of the tile.
+        /// Dictionaries with all the inventorie changes how they are now for this path
+        public Dictionary<Tile, Inventory> inventoryChanges = new Dictionary<Tile, Inventory>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProjectPorcupine.Jobs.Path"/> class.
         /// </summary>
@@ -58,6 +62,7 @@ namespace ProjectPorcupine.Jobs
             Fulfilled = new Needs(other.Fulfilled);
             Fulfilled += action.Provides;
             Actions = new Queue<Action>(other.Actions); // Should this also be value based?
+            inventoryChanges = CloneDictionary(other.inventoryChanges);
 
             Actions.Enqueue(action);
         }
@@ -92,6 +97,21 @@ namespace ProjectPorcupine.Jobs
             output += "]";
 
             return output;
+        }
+
+        Dictionary<Tile, Inventory> CloneDictionary(Dictionary<Tile, Inventory> dictionary)
+        {
+            Dictionary<Tile, Inventory> ret = new Dictionary<Tile, Inventory>();
+
+            foreach(Tile t in dictionary.Keys)
+            {
+                if (dictionary[t] != null)
+                    ret.Add(t, dictionary[t].Clone());
+                else
+                    ret.Add(t, null);
+            }
+
+            return ret;
         }
     }
 }

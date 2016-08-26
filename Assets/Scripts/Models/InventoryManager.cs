@@ -213,7 +213,7 @@ public class InventoryManager
         return path;
     }
 
-    private void CleanupInventory(Inventory inv)
+    public void CleanupInventory(Inventory inv)
     {
         if (inv.StackSize == 0)
         {

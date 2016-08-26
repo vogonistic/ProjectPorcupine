@@ -1,16 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿#region License
+// ====================================================
+// Project Porcupine Copyright(C) 2016 Team Porcupine
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software, 
+// and you are welcome to redistribute it under certain conditions; See 
+// file LICENSE, which is part of this source code package, for details.
+// ====================================================
+#endregion
+
 using UnityEngine;
 
-namespace JobUtils
+namespace ProjectPorcupine.Jobs
 {
     public class Goal
     {
         public string Name;
-        public NeedsDictionary Requires;
+        public Needs Requires;
         public Vector2 Location;
 
-        public Goal(string name, Vector2 location, NeedsDictionary needs)
+        public Goal(string name, Vector2 location, Needs needs)
         {
             Name = name;
             Location = location;

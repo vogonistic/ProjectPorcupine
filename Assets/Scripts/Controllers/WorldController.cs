@@ -15,7 +15,7 @@ using MoonSharp.Interpreter;
 using Scheduler;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using JobUtils;
+using ProjectPorcupine.Jobs;
 using Random = UnityEngine.Random;
 
 [MoonSharpUserData]
@@ -177,8 +177,7 @@ public class WorldController : MonoBehaviour
         if (!hasTestedGoalResolver)
         {
             hasTestedGoalResolver = true;
-            GoalResolver g = new JobUtils.GoalResolver();
-            g.DoThings();
+            new ProjectPorcupine.Jobs.Resolver().DoThings();
         }
     }
 

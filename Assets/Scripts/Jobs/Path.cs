@@ -56,6 +56,7 @@ namespace ProjectPorcupine.Jobs
             Unfulfilled -= action.Provides;
             Unfulfilled += action.Requires;
             Fulfilled = new Needs(other.Fulfilled);
+            Fulfilled += action.Provides;
             Actions = new Queue<Action>(other.Actions); // Should this also be value based?
 
             Actions.Enqueue(action);

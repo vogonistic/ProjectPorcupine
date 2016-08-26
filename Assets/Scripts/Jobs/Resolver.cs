@@ -8,7 +8,6 @@
 #endregion
 
 using System.Collections.Generic;
-using UnityEngine;
 
 // In XML version, add parameter for max on input and output (inventory prefab has default max stack size)
 // Need to take walking into account. I.e. if you need ice and steel, go fetch one, drop it off, fetch second, drop it off. Different path from being able to carry both.
@@ -37,10 +36,12 @@ namespace ProjectPorcupine.Jobs
             possibleActions.Add(SmeltAction);
 
             // Get needs steel plates
-            Needs needs = new Needs();
-            needs.Add(steelPlateResource, 5);
-            needs.Add(iceResource, 50);
-            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), needs);
+            Goal buildAWall = new Goal("Build a Wall", World.current.GetTileAt(0, 0), new Needs()
+                {
+                    { steelPlateResource, 5 },
+                    { iceResource, 50 }
+                });
+
             Trace("Starting with goal: " + buildAWall);
 
             Path path = Resolve(buildAWall);
@@ -151,7 +152,7 @@ namespace ProjectPorcupine.Jobs
                 Action ac = new Action(
                                 "Fetch " + resourceWeHave,
                                 20,
-                                new Vector2(20, 0));
+                                World.current.GetTileAt(20, 0));
 
                 ac.AddProvides(resourceWeHave, 50);
                 actions.Add(ac);
@@ -162,7 +163,7 @@ namespace ProjectPorcupine.Jobs
                 Action ac = new Action(
                                 "Fetch " + resourceWeHave2,
                                 20,
-                                new Vector2(20, 0));
+                                World.current.GetTileAt(20, 0));
 
                 ac.AddProvides(resourceWeHave2, 50);
                 actions.Add(ac);
@@ -179,7 +180,7 @@ namespace ProjectPorcupine.Jobs
             int value = conditions.Value(steelPlateResource);
             if (value > 0)
             {
-                Action smelt = new Action("Forge Iron to Steel", (value * 2) + 20, new Vector2(0, 20));
+                Action smelt = new Action("Forge Iron to Steel", (value * 2) + 20, World.current.GetTileAt(20, 20));
                 smelt.AddProvides(steelPlateResource, value);
                 smelt.AddRequirement(ironOreResource, value);
                 actions.Add(smelt);

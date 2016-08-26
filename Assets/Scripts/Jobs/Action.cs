@@ -7,29 +7,27 @@
 // ====================================================
 #endregion
 
-using UnityEngine;
-
 namespace ProjectPorcupine.Jobs
 {
     public class Action
     {
         public string Name;
         public int Cost;
-        public Vector2 Location;
+        public Tile Tile;
 
         public Needs Requires = new Needs();
         public Needs Provides = new Needs();
 
-        public Action(string name, int costInTime, Vector2 location)
+        public Action(string name, int costInTime, Tile tile)
         {
             Name = name;
             Cost = costInTime;
-            Location = location;
+            Tile = tile;
         }
 
         public Action Copy()
         {
-            return new Action(Name, Cost, Location);
+            return new Action(Name, Cost, Tile);
         }
 
         public void AddRequirement(string c, int n = 1)
@@ -44,7 +42,7 @@ namespace ProjectPorcupine.Jobs
 
         public override string ToString()
         {
-            return string.Format("[Action name: {0}, cost: {1}, location: {2}]", Name, Cost, Location.ToString());
+            return string.Format("[Action name: {0}, cost: {1}, tile: {2}]", Name, Cost, Tile);
         }
     }
 }

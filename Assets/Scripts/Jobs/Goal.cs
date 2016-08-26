@@ -7,33 +7,31 @@
 // ====================================================
 #endregion
 
-using UnityEngine;
-
 namespace ProjectPorcupine.Jobs
 {
     public class Goal
     {
         public string Name;
         public Needs Requires;
-        public Vector2 Location;
+        public Tile Tile;
 
-        public Goal(string name, Vector2 location, Needs needs)
+        public Goal(string name, Tile tile, Needs needs)
         {
             Name = name;
-            Location = location;
+            Tile = tile;
             Requires = needs;
         }
 
         public Goal(Goal other)
         {
             this.Name = other.Name;
-            this.Location = other.Location;
+            this.Tile = other.Tile;
             this.Requires = other.Requires;
         }
 
         public override string ToString()
         {
-            return string.Format("[Goal name: {0}, location: {1}, requires: ({2})]", Name, Location, Requires);
+            return string.Format("[Goal name: {0}, tile: {1}, requires: ({2})]", Name, Tile, Requires);
         }
     }
 }

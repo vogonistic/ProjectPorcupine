@@ -16,6 +16,31 @@ namespace JobUtils
         // Function delegate for returning possible actions.
         public delegate List<Action> ActionDelegate(NeedsDictionary conditions);
 
+        // One stop shop. Runs the whole thing.
+        public void DoThings()
+        {
+            // Add the fetch action
+            possibleActions.Add(FetchAction);
+            possibleActions.Add(SmeltAction);
+
+            // Get needs steel plates
+            NeedsDictionary needs = new NeedsDictionary();
+            needs.AddN(steelPlateResource, 5);
+            needs.AddN(iceResource, 50);
+            Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), needs);
+            Trace("Starting with goal: " + buildAWall);
+
+            PathToGoal path = Resolve(buildAWall);
+            if (path != null)
+            {
+                Trace("WE FOUND A PATH:\n" + path);
+            }
+            else
+            {
+                Trace("No path found :sad:");
+            }
+        }
+
         #if true
         private void Trace(string message)
         {
@@ -51,7 +76,7 @@ namespace JobUtils
             PathToGoal currentPath;
             do
             {
-                if (++currentInteration >= maxIteration) 
+                if (++currentInteration >= maxIteration)
                 {
                     break;
                 }
@@ -86,7 +111,7 @@ namespace JobUtils
                         pathsToExplore.Enqueue(newPath, newPath.CostInTime);
                     }
                 }
-            } 
+            }
             while (pathsToExplore.Count > 0);
 
             // We've exhausted the search.
@@ -108,23 +133,23 @@ namespace JobUtils
             List<Action> actions = new List<Action>();
 
             // Check if they want a steel plate
-            if (conditions.Value(resourceWeHave) > 0) 
+            if (conditions.Value(resourceWeHave) > 0)
             {
                 Action ac = new Action(
-                    "Fetch " + resourceWeHave,
-                    20,
-                    new Vector2(20, 0));
+                                "Fetch " + resourceWeHave,
+                                20,
+                                new Vector2(20, 0));
 
                 ac.AddNProvides(resourceWeHave, 50);
                 actions.Add(ac);
             }
 
-            if (conditions.Value(resourceWeHave2) > 0) 
+            if (conditions.Value(resourceWeHave2) > 0)
             {
                 Action ac = new Action(
-                    "Fetch " + resourceWeHave2,
-                    20,
-                    new Vector2(20, 0));
+                                "Fetch " + resourceWeHave2,
+                                20,
+                                new Vector2(20, 0));
 
                 ac.AddNProvides(resourceWeHave2, 50);
                 actions.Add(ac);

@@ -1,34 +1,42 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿#region License
+// ====================================================
+// Project Porcupine Copyright(C) 2016 Team Porcupine
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software, 
+// and you are welcome to redistribute it under certain conditions; See 
+// file LICENSE, which is part of this source code package, for details.
+// ====================================================
+#endregion
 
-namespace JobUtils
+using System.Collections;
+using System.Collections.Generic;
+
+namespace ProjectPorcupine.Jobs
 {
-    public class NeedsDictionary : IEnumerable
+    public class Needs : IEnumerable
     {
         private Dictionary<string, int> data;
 
-        public NeedsDictionary() 
+        public Needs()
         {
             data = new Dictionary<string, int>();
         }
-            
-        public NeedsDictionary(NeedsDictionary other) 
+
+        public Needs(Needs other)
         {
             data = new Dictionary<string, int>(other.data);
         }
 
-        public int Count 
+        public int Count
         {
-            get 
+            get
             {
                 return data.Keys.Count; 
             }
         }
 
-        public static NeedsDictionary operator +(NeedsDictionary a, NeedsDictionary b) 
+        public static Needs operator +(Needs a, Needs b)
         {
-            NeedsDictionary ret = new NeedsDictionary(a);
+            Needs ret = new Needs(a);
             foreach (string key in b)
             {
                 ret.Add(key, b.data[key]);
@@ -37,9 +45,9 @@ namespace JobUtils
             return ret;
         }
 
-        public static NeedsDictionary operator -(NeedsDictionary a, NeedsDictionary b) 
+        public static Needs operator -(Needs a, Needs b)
         {
-            NeedsDictionary ret = new NeedsDictionary(a);
+            Needs ret = new Needs(a);
             foreach (string key in b)
             {
                 ret.Remove(key, b.data[key]);
@@ -48,9 +56,9 @@ namespace JobUtils
             return ret;
         }
 
-        public static NeedsDictionary Intersection(NeedsDictionary a, NeedsDictionary b) 
+        public static Needs Intersection(Needs a, Needs b)
         {
-            NeedsDictionary ret = new NeedsDictionary();
+            Needs ret = new Needs();
             foreach (string key in a)
             {
                 if (b.Value(key) > 0)
@@ -61,8 +69,8 @@ namespace JobUtils
 
             return ret;
         }
-            
-        public NeedsDictionary Add(string key, int n = 1) 
+
+        public Needs Add(string key, int n = 1)
         {
             if (n > 0)
             {
@@ -75,10 +83,11 @@ namespace JobUtils
                     data.Add(key, n);
                 }
             }
+
             return this;
         }
-            
-        public NeedsDictionary Remove(string key, int n = 1) 
+
+        public Needs Remove(string key, int n = 1)
         {
             if (n > 0)
             {
@@ -92,10 +101,11 @@ namespace JobUtils
                     }
                 }
             }
+
             return this;
         }
 
-        public int Value(string key) 
+        public int Value(string key)
         {
             if (data.ContainsKey(key))
             {
@@ -111,13 +121,13 @@ namespace JobUtils
         {
             return data.Keys.GetEnumerator();
         }
-            
-        public override string ToString() 
+
+        public override string ToString()
         {
-            string ret = "Needs: [\n";
+            string ret = "[Needs\n";
             foreach (string key in this)
             {
-                ret += "Key: " + key + ", value: " + data[key] + "\n";
+                ret += "  " + key + ": " + data[key] + ",\n";
             }
 
             return ret + "]";

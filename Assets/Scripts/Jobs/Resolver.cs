@@ -1,10 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿#region License
+// ====================================================
+// Project Porcupine Copyright(C) 2016 Team Porcupine
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software, 
+// and you are welcome to redistribute it under certain conditions; See 
+// file LICENSE, which is part of this source code package, for details.
+// ====================================================
+#endregion
+
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace JobUtils
+// In XML version, add parameter for max on input and output (inventory prefab has default max stack size)
+// Need to take walking into account. I.e. if you need ice and steel, go fetch one, drop it off, fetch second, drop it off. Different path from being able to carry both.
+// Add code that can figure out if we need to drop off inventory or can pick up more
+// Let the Character modify cost for path and action
+// Integrate into game
+namespace ProjectPorcupine.Jobs
 {
-    public class GoalResolver
+    public class Resolver
     {
         private static string ironOreResource = "Iron Ore";
         private static string iceResource = "Ice";
@@ -14,7 +27,7 @@ namespace JobUtils
         private List<ActionDelegate> possibleActions = new List<ActionDelegate>();
 
         // Function delegate for returning possible actions.
-        public delegate List<Action> ActionDelegate(NeedsDictionary conditions);
+        public delegate List<Action> ActionDelegate(Needs conditions);
 
         // One stop shop. Runs the whole thing.
         public void DoThings()
@@ -24,13 +37,13 @@ namespace JobUtils
             possibleActions.Add(SmeltAction);
 
             // Get needs steel plates
-            NeedsDictionary needs = new NeedsDictionary();
+            Needs needs = new Needs();
             needs.Add(steelPlateResource, 5);
             needs.Add(iceResource, 50);
             Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), needs);
             Trace("Starting with goal: " + buildAWall);
 
-            PathToGoal path = Resolve(buildAWall);
+            Path path = Resolve(buildAWall);
             if (path != null)
             {
                 Trace("WE FOUND A PATH:\n" + path);
@@ -55,10 +68,10 @@ namespace JobUtils
         #endif
 
         // Runs until we've solved the problem or exhausted the potential solutions.
-        private PathToGoal Resolve(Goal g)
+        private Path Resolve(Goal g)
         {
             // Turn it into a PathToGoal and queue it.
-            PathToGoal path = new PathToGoal(g);
+            Path path = new Path(g);
 
             int maxIteration = 20;
             int currentInteration = 0;
@@ -70,10 +83,10 @@ namespace JobUtils
 
             // Should we rename this so that it is a bit more general?
             // Because it does not contain anything inherently pathfindy.
-            PathfindingPriorityQueue<PathToGoal> pathsToExplore = new PathfindingPriorityQueue<PathToGoal>();
-            pathsToExplore.Enqueue(path, path.CostInTime);
+            PathfindingPriorityQueue<Path> pathsToExplore = new PathfindingPriorityQueue<Path>();
+            pathsToExplore.Enqueue(path, path.Cost);
 
-            PathToGoal currentPath;
+            Path currentPath;
             do
             {
                 if (++currentInteration >= maxIteration)
@@ -99,7 +112,7 @@ namespace JobUtils
                     foreach (Action nextAction in actions)
                     {
                         // Create a new path for each.
-                        PathToGoal newPath = new PathToGoal(currentPath, nextAction);
+                        Path newPath = new Path(currentPath, nextAction);
 
                         // Yay! Found it!
                         if (newPath.IsDone())
@@ -108,7 +121,7 @@ namespace JobUtils
                         }
 
                         // Nope, not finished. Put it on the queue.
-                        pathsToExplore.Enqueue(newPath, newPath.CostInTime);
+                        pathsToExplore.Enqueue(newPath, newPath.Cost);
                     }
                 }
             }
@@ -123,7 +136,7 @@ namespace JobUtils
         /// </summary>
         /// <returns>A list of actions.</returns>
         /// <param name="conditions">Conditions to fulfill.</param>
-        private List<Action> FetchAction(NeedsDictionary conditions)
+        private List<Action> FetchAction(Needs conditions)
         {
             Trace("Testing Fetch Actions");
 
@@ -159,7 +172,7 @@ namespace JobUtils
             return actions;
         }
 
-        private List<Action> SmeltAction(NeedsDictionary conditions)
+        private List<Action> SmeltAction(Needs conditions)
         {
             Trace("Testing Smelt Actions");
             List<Action> actions = new List<Action>();

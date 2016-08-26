@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.Xml.Serialization;
 using System.IO;
-using JobUtils;
+using ProjectPorcupine.Jobs;
 
 public class WorldController : MonoBehaviour
 {
@@ -104,7 +104,7 @@ public class WorldController : MonoBehaviour
         jobSpriteController = new JobSpriteController(world, furnitureSpriteController);
         inventorySpriteController = new InventorySpriteController(world, inventoryUI);
         buildModeController = new BuildModeController();
-        if(Settings.getSettingAsBool("DevTools_enabled", false))
+        if (Settings.getSettingAsBool("DevTools_enabled", false))
         {
             spawnInventoryController = new SpawnInventoryController();
         }
@@ -118,7 +118,7 @@ public class WorldController : MonoBehaviour
         Instantiate(Resources.Load("UIController"), Controllers.transform);
 
         GameObject Canvas = GameObject.Find("Canvas");
-        go = Instantiate(Resources.Load("UI/ContextMenu"),Canvas.transform.position, Canvas.transform.rotation, Canvas.transform) as GameObject;
+        go = Instantiate(Resources.Load("UI/ContextMenu"), Canvas.transform.position, Canvas.transform.rotation, Canvas.transform) as GameObject;
         go.name = "ContextMenu";
 
 
@@ -144,8 +144,7 @@ public class WorldController : MonoBehaviour
         if (!hasTestedGoalResolver)
         {
             hasTestedGoalResolver = true;
-            GoalResolver g = new JobUtils.GoalResolver();
-            g.DoThings();
+            new ProjectPorcupine.Jobs.Resolver().DoThings();
         }
     }
 

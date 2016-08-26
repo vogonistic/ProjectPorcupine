@@ -76,12 +76,12 @@ namespace ProjectPorcupine.Jobs
             string output = "[PathToGoal cost: " + Cost + "\n  " + Goal + "\n";
             if (Unfulfilled.Count > 0)
             {
-                output += "  Unfulfilled:\n    " + Unfulfilled.ToString().Replace("\n", "\n  ") + "\n";
+                output += "  Unfulfilled: " + Unfulfilled.ToString().Replace("\n", "\n  ") + "\n";
             }
 
             if (Fulfilled.Count > 0)
             {
-                output += "  Fulfilled:\n    " + Fulfilled.ToString().Replace("\n", "\n  ") + "\n";
+                output += "  Fulfilled: " + Fulfilled.ToString().Replace("\n", "\n  ") + "\n";
             }
 
             if (Actions.Count > 0)

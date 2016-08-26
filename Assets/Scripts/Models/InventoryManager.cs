@@ -23,7 +23,7 @@ public class InventoryManager
         inventories = new Dictionary<string, List<Inventory>>();
     }
 
-    private void CleanupInventory(Inventory inv)
+    public void CleanupInventory(Inventory inv)
     {
         if (inv.stackSize == 0)
         {

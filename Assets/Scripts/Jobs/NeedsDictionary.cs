@@ -31,7 +31,7 @@ namespace JobUtils
             NeedsDictionary ret = new NeedsDictionary(a);
             foreach (string key in b)
             {
-                ret.AddN(key, b.data[key]);
+                ret.Add(key, b.data[key]);
             }
 
             return ret;
@@ -42,7 +42,7 @@ namespace JobUtils
             NeedsDictionary ret = new NeedsDictionary(a);
             foreach (string key in b)
             {
-                ret.RemoveN(key, b.data[key]);
+                ret.Remove(key, b.data[key]);
             }
 
             return ret;
@@ -55,51 +55,43 @@ namespace JobUtils
             {
                 if (b.Value(key) > 0)
                 {
-                    ret.AddN(key, a.data[key] + b.data[key]);
+                    ret.Add(key, a.data[key] + b.data[key]);
                 }
             }
 
             return ret;
         }
             
-        public NeedsDictionary Add(string key) 
+        public NeedsDictionary Add(string key, int n = 1) 
         {
-            AddN(key, 1);
-            return this;
-        }
-
-        public NeedsDictionary AddN(string key, int n) 
-        {
-            if (data.ContainsKey(key))
+            if (n > 0)
             {
-                data[key] += n;
-            }
-            else
-            {
-                data.Add(key, n);
-            }
-
-            return this;
-        }
-
-        public NeedsDictionary Remove(string key) 
-        {
-            RemoveN(key, 1);
-            return this;
-        }
-
-        public NeedsDictionary RemoveN(string key, int n) 
-        {
-            if (data.ContainsKey(key))
-            {
-                data[key] -= n;
-
-                if (data[key] <= 0)
+                if (data.ContainsKey(key))
                 {
-                    data.Remove(key);
+                    data[key] += n;
+                }
+                else
+                {
+                    data.Add(key, n);
                 }
             }
+            return this;
+        }
+            
+        public NeedsDictionary Remove(string key, int n = 1) 
+        {
+            if (n > 0)
+            {
+                if (data.ContainsKey(key))
+                {
+                    data[key] -= n;
 
+                    if (data[key] <= 0)
+                    {
+                        data.Remove(key);
+                    }
+                }
+            }
             return this;
         }
 

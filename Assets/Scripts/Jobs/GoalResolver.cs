@@ -25,8 +25,8 @@ namespace JobUtils
 
             // Get needs steel plates
             NeedsDictionary needs = new NeedsDictionary();
-            needs.AddN(steelPlateResource, 5);
-            needs.AddN(iceResource, 50);
+            needs.Add(steelPlateResource, 5);
+            needs.Add(iceResource, 50);
             Goal buildAWall = new Goal("Build a Wall", new Vector2(0, 0), needs);
             Trace("Starting with goal: " + buildAWall);
 
@@ -140,7 +140,7 @@ namespace JobUtils
                                 20,
                                 new Vector2(20, 0));
 
-                ac.AddNProvides(resourceWeHave, 50);
+                ac.AddProvides(resourceWeHave, 50);
                 actions.Add(ac);
             }
 
@@ -151,7 +151,7 @@ namespace JobUtils
                                 20,
                                 new Vector2(20, 0));
 
-                ac.AddNProvides(resourceWeHave2, 50);
+                ac.AddProvides(resourceWeHave2, 50);
                 actions.Add(ac);
             }
 
@@ -167,8 +167,8 @@ namespace JobUtils
             if (value > 0)
             {
                 Action smelt = new Action("Forge Iron to Steel", (value * 2) + 20, new Vector2(0, 20));
-                smelt.AddNProvides(steelPlateResource, value);
-                smelt.AddNRequirements(ironOreResource, value);
+                smelt.AddProvides(steelPlateResource, value);
+                smelt.AddRequirement(ironOreResource, value);
                 actions.Add(smelt);
             }
 

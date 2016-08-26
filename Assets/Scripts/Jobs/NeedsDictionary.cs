@@ -47,6 +47,20 @@ namespace JobUtils
 
             return ret;
         }
+
+        public static NeedsDictionary Intersection(NeedsDictionary a, NeedsDictionary b) 
+        {
+            NeedsDictionary ret = new NeedsDictionary();
+            foreach (string key in a)
+            {
+                if (b.Value(key) > 0)
+                {
+                    ret.AddN(key, a.data[key] + b.data[key]);
+                }
+            }
+
+            return ret;
+        }
             
         public NeedsDictionary Add(string key) 
         {

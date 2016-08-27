@@ -27,29 +27,31 @@ namespace ProjectPorcupine.Jobs
         // Contains a list of functions that checks for possible actions.
         private List<ActionDelegate> possibleActions = new List<ActionDelegate>();
 
-        // Function delegate for returning possible actions.
-        public delegate List<Action> ActionDelegate(Needs conditions, Path currentPath);
-
-        Dictionary<Tile, Inventory> inventoryBeforeChanges = new Dictionary<Tile, Inventory>();
+        private Dictionary<Tile, Inventory> inventoryBeforeChanges = new Dictionary<Tile, Inventory>();
 
         public Resolver(InventoryManager invManager)
         {
             inventoryManagerReference = invManager;
         }
 
+        // Function delegate for returning possible actions.
+        public delegate List<Action> ActionDelegate(Needs conditions, Path CurrentPath);
+
         // One stop shop. Runs the whole thing.
         public void DoThings()
         {
-
             // Add the fetch action
             possibleActions.Add(FetchAction);
             possibleActions.Add(SmeltAction);
 
             // Get needs steel plates
-            Goal buildAWall = new Goal("Build a Wall", World.current.GetTileAt(0, 0), new Needs()
+            Goal buildAWall = new Goal(
+                "Build a Wall", 
+                World.Current.GetTileAt(0, 0), 
+                new Needs()
                 {
                     { steelPlateResource, 5 },
-                    { iceResource, 20 } //Made Ice a little less so that there definitelly is enough in the world to fetch
+                    { iceResource, 20 }
                 });
 
             Trace("Starting with goal: " + buildAWall);
@@ -111,7 +113,8 @@ namespace ProjectPorcupine.Jobs
 
                 // Rollback inventory changes made to the lastpath
                 RollbackInventoryChanges();
-                // Get the new changes made to the currentpath
+
+                // Get the new changes made to the Currentpath
                 GetInventoryChanges(currentPath);
 
                 // Loop over each actionFinder.
@@ -156,7 +159,6 @@ namespace ProjectPorcupine.Jobs
         /// <param name="conditions">Conditions to fulfill.</param>
         private List<Action> FetchAction(Needs conditions, Path currentPath)
         {
-
             Trace("Testing Fetch Actions");
 
             List<Action> actions = new List<Action>();
@@ -170,15 +172,14 @@ namespace ProjectPorcupine.Jobs
 
                     // There is probably a beter way then setting the desired amount to the needed resource but for now I am testing if this works
                     // TODO: Currently I let this run from the center location --> this should be the position of the character running this code
-                    Path_AStar path = inventoryManagerReference.GetPathToClosestInventoryOfType(resourceWeNeed, World.current.GetCenterTile(), toFetch, true);
+                    Path_AStar path = inventoryManagerReference.GetPathToClosestInventoryOfType(resourceWeNeed, World.Current.GetCenterTile(), toFetch, true);
 
                     Action ac = new Action(
                                     "Fetch " + resourceWeNeed,
                                     path.Length(),
-                                    path.EndTile()
-                                    );
+                                    path.EndTile());
 
-                    //Save changes in inventoryBeforeChanges so that we can rollback to them after we are done resolving
+                    // Save changes in inventoryBeforeChanges so that we can rollback to them after we are done resolving
                     Inventory newInventory = path.EndTile().Inventory;
                     if (newInventory != null)
                     {
@@ -191,19 +192,19 @@ namespace ProjectPorcupine.Jobs
                         inventoryBeforeChanges.Add(path.EndTile(), newInventory);
                     }
 
-                    //Look for the needed amount and update the inventory
-                    if (toFetch >= path.EndTile().Inventory.stackSize)
+                    // Look for the needed amount and update the inventory
+                    if (toFetch >= path.EndTile().Inventory.StackSize)
                     {
-                        toFetch = path.EndTile().Inventory.stackSize;
-                        path.EndTile().Inventory.stackSize = 0;
+                        toFetch = path.EndTile().Inventory.StackSize;
+                        path.EndTile().Inventory.StackSize = 0;
                         inventoryManagerReference.CleanupInventory(path.EndTile().Inventory);
                     }
                     else
                     {
-                        path.EndTile().Inventory.stackSize -= toFetch;
+                        path.EndTile().Inventory.StackSize -= toFetch;
                     }
 
-                    //Save Changes in the Current Path so that we can put them back if we continue along this path
+                    // Save Changes in the Current Path so that we can put them back if we continue along this path
                     Inventory newInventory2 = path.EndTile().Inventory;
                     if (newInventory2 != null)
                     {
@@ -236,7 +237,7 @@ namespace ProjectPorcupine.Jobs
             int value = conditions.Value(steelPlateResource);
             if (value > 0)
             {
-                Action smelt = new Action("Forge Iron to Steel", (value * 2) + 20, World.current.GetTileAt(20, 20));
+                Action smelt = new Action("Forge Iron to Steel", (value * 2) + 20, World.Current.GetTileAt(20, 20));
                 smelt.AddProvides(steelPlateResource, value);
                 smelt.AddRequirement(ironOreResource, value);
                 actions.Add(smelt);
@@ -249,13 +250,15 @@ namespace ProjectPorcupine.Jobs
         private void RollbackInventoryChanges()
         {
             if (inventoryBeforeChanges == null)
-                return;
-
-            foreach(Tile tile in inventoryBeforeChanges.Keys)
             {
-                if(tile.Inventory != null)
+                return;
+            }
+
+            foreach (Tile tile in inventoryBeforeChanges.Keys)
+            {
+                if (tile.Inventory != null)
                 {
-                    tile.Inventory.stackSize = 0;
+                    tile.Inventory.StackSize = 0;
                     inventoryManagerReference.CleanupInventory(tile.Inventory);
                 }
 
@@ -266,18 +269,22 @@ namespace ProjectPorcupine.Jobs
         private void GetInventoryChanges(Path currentPath)
         {
             if (currentPath == null || currentPath.inventoryChanges == null)
+            {
                 return;
+            }
 
             foreach (Tile tile in currentPath.inventoryChanges.Keys)
             {
                 if (tile.Inventory != null)
                 {
-                    tile.Inventory.stackSize = 0;
+                    tile.Inventory.StackSize = 0;
                     inventoryManagerReference.CleanupInventory(tile.Inventory);
                 }
 
-                if(currentPath.inventoryChanges[tile] != null)
+                if (currentPath.inventoryChanges[tile] != null)
+                {
                     inventoryManagerReference.PlaceInventory(tile, currentPath.inventoryChanges[tile].Clone());
+                }
             }
         }
     }

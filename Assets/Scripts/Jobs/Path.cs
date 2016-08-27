@@ -29,7 +29,8 @@ namespace ProjectPorcupine.Jobs
         /// List of found actions
         public Queue<Action> Actions = new Queue<Action>();
 
-        //I do not like this but for now I will keep it like this... It should also only save the coordnates of the tile.
+        // I do not like this but for now I will keep it like this... It should also only save the coordnates of the tile.
+
         /// Dictionaries with all the inventorie changes how they are now for this path
         public Dictionary<Tile, Inventory> inventoryChanges = new Dictionary<Tile, Inventory>();
 
@@ -99,16 +100,20 @@ namespace ProjectPorcupine.Jobs
             return output;
         }
 
-        Dictionary<Tile, Inventory> CloneDictionary(Dictionary<Tile, Inventory> dictionary)
+        private Dictionary<Tile, Inventory> CloneDictionary(Dictionary<Tile, Inventory> dictionary)
         {
             Dictionary<Tile, Inventory> ret = new Dictionary<Tile, Inventory>();
 
-            foreach(Tile t in dictionary.Keys)
+            foreach (Tile t in dictionary.Keys)
             {
                 if (dictionary[t] != null)
+                {
                     ret.Add(t, dictionary[t].Clone());
+                }
                 else
+                {
                     ret.Add(t, null);
+                }
             }
 
             return ret;

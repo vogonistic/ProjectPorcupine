@@ -55,17 +55,7 @@ namespace ProjectPorcupine.Jobs
 
             return ret;
         }
-
-        static int min(int a, int b)
-        {
-            return a < b ? a : b;
-        }
-
-        static int max(int a, int b)
-        {
-            return a > b ? a : b;
-        }
-
+            
         public static Needs Intersection(Needs a, Needs b)
         {
             Needs ret = new Needs();
@@ -73,7 +63,7 @@ namespace ProjectPorcupine.Jobs
             {
                 if (b.Value(key) > 0)
                 {
-                    ret.Add(key, max(a.data[key], b.data[key]) - min(a.data[key], b.data[key]));
+                    ret.Add(key, Max(a.data[key], b.data[key]) - Min(a.data[key], b.data[key]));
                 }
             }
 
@@ -141,6 +131,16 @@ namespace ProjectPorcupine.Jobs
             }
 
             return ret + "]";
+        }
+
+        private static int Min(int a, int b)
+        {
+            return a < b ? a : b;
+        }
+
+        private static int Max(int a, int b)
+        {
+            return a > b ? a : b;
         }
     }
 }

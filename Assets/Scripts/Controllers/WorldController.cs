@@ -1,8 +1,8 @@
 #region License
 // ====================================================
 // Project Porcupine Copyright(C) 2016 Team Porcupine
-// This program comes with ABSOLUTELY NO WARRANTY; This is free software, 
-// and you are welcome to redistribute it under certain conditions; See 
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software,
+// and you are welcome to redistribute it under certain conditions; See
 // file LICENSE, which is part of this source code package, for details.
 // ====================================================
 #endregion
@@ -46,6 +46,8 @@ public class WorldController : MonoBehaviour
     private float gameTickDelay;
     private bool isPaused = false;
 
+    private bool hasTestedGoalResolver = false;
+
     public static WorldController Instance { get; protected set; }
 
     // The world and tile data.
@@ -71,7 +73,7 @@ public class WorldController : MonoBehaviour
             return timeManager.TimeScale;
         }
     }
-    
+
     // Use this for initialization.
     public void OnEnable()
     {
@@ -142,8 +144,6 @@ public class WorldController : MonoBehaviour
         go.name = "ContextMenu";
     }
 
-    bool hasTestedGoalResolver = false;
-
     public void Update()
     {
         // Systems that update every frame.
@@ -161,7 +161,7 @@ public class WorldController : MonoBehaviour
 
         if (timeManager.TotalDeltaTime >= gameTickDelay)
         {
-            // Systems that update at fixed frequency. 
+            // Systems that update at fixed frequency.
             if (IsPaused == false)
             {
                 // Systems that update at fixed frequency when not paused.
@@ -177,7 +177,7 @@ public class WorldController : MonoBehaviour
         if (!hasTestedGoalResolver)
         {
             hasTestedGoalResolver = true;
-            new ProjectPorcupine.Jobs.Resolver(world.inventoryManager).DoThings();
+            new ProjectPorcupine.Jobs.Resolver(World.inventoryManager).DoThings();
         }
     }
 

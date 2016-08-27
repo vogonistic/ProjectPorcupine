@@ -59,7 +59,7 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
 
     private List<Job> jobs;
 
-    private List<Recipe> recipes;
+    private List<Recipe> converts;
 
     // This is the generic type of object this is, allowing things to interact with it based on it's generic type
     private HashSet<string> typeTags;
@@ -557,19 +557,17 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
                     UnlocalizedDescription = reader.ReadContentAsString();
                     break;
 
-                case "Recipes":
-                    List<Recipe> recipes = new List<Recipe>();
+                case "Converts":
+                    converts = new List<Recipe>();
                     XmlReader recipiesReader = reader.ReadSubtree();
 
                     while (recipiesReader.Read())
                     {
-                        if (recipiesReader.Name == "Recipe")
-                        {
-                            Recipe tmp = new Recipe();
-                            tmp.ReadXml(recipiesReader);
-                            recipes.Add(tmp);
-                        }
+                        Recipe tmp = new Recipe();
+                        tmp.ReadXml(recipiesReader);
+                        converts.Add(tmp);
                     }
+
                     break;
             }
         }

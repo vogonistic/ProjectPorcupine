@@ -303,8 +303,18 @@
 
     <LocalizationCode>furn_heater</LocalizationCode>
     <UnlocalizedDescription>furn_heater_desc</UnlocalizedDescription>
-  </Furniture>
 
+        <Converts>
+            <Recipe scalar="true">
+                <Inputs>
+                    <Item objectType="Raw Iron" quantity="1" />
+                </Inputs>
+                <Outputs>
+                    <Item objectType="Steel Plate" quantity="1" />
+                </Outputs>
+            </Recipe>
+        </Converts>
+    </Furniture>
 
   <Furniture objectType="Power Cell Press">
     <Name>Power Cell Press</Name>

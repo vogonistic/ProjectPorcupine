@@ -6,7 +6,6 @@
 // file LICENSE, which is part of this source code package, for details.
 // ====================================================
 #endregion
-using ProjectPorcupine.Models;
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -59,7 +58,7 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
 
     private List<Job> jobs;
 
-    private List<Recipe> converts;
+    private List<ProjectPorcupine.Models.Convert> converts;
 
     // This is the generic type of object this is, allowing things to interact with it based on it's generic type
     private HashSet<string> typeTags;
@@ -558,17 +557,20 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
                     break;
 
                 case "Converts":
-                    converts = new List<Recipe>();
-                    XmlReader recipiesReader = reader.ReadSubtree();
+                    converts = new List<ProjectPorcupine.Models.Convert>();
+                    XmlReader convertsReader = reader.ReadSubtree();
 
-                    while (recipiesReader.Read())
+                    while (convertsReader.Read())
                     {
-                        Recipe tmp = new Recipe();
-                        tmp.ReadXml(recipiesReader);
-                        converts.Add(tmp);
+                        if (convertsReader.Name == "Convert")
+                        {
+                            ProjectPorcupine.Models.Convert tmp = new ProjectPorcupine.Models.Convert();
+                            tmp.ReadXml(convertsReader);
+                            converts.Add(tmp);
+                        }
                     }
 
-                    break;
+                        break;
             }
         }
     }

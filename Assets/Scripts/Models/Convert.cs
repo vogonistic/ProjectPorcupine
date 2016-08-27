@@ -13,9 +13,9 @@ using System.Xml.Serialization;
 
 namespace ProjectPorcupine.Models
 {
-    public class Recipe : IXmlSerializable
+    public class Convert : IXmlSerializable
     {
-        public class RecipeItem : IXmlSerializable
+        public class Item : IXmlSerializable
         {
             // TODO make this better
             private string objectType;
@@ -43,8 +43,8 @@ namespace ProjectPorcupine.Models
             #endregion
         }
 
-        private List<RecipeItem> inputs;
-        private List<RecipeItem> outputs;
+        private List<Item> inputs;
+        private List<Item> outputs;
 
         private bool scalar;
 
@@ -52,11 +52,11 @@ namespace ProjectPorcupine.Models
 
         public void WriteXml(XmlWriter writer)
         {
-            writer.WriteStartElement("Recipe");
+            writer.WriteStartElement("Convert");
             writer.WriteAttributeString("scalar", scalar.ToString());
 
             writer.WriteStartElement("Inputs");
-            foreach (RecipeItem item in inputs)
+            foreach (Item item in inputs)
             {
                 writer.WriteStartElement("Item");
                 item.WriteXml(writer);
@@ -65,7 +65,7 @@ namespace ProjectPorcupine.Models
             writer.WriteEndElement();
 
             writer.WriteStartElement("Outputs");
-            foreach (RecipeItem item in outputs)
+            foreach (Item item in outputs)
             {
                 writer.WriteStartElement("Item");
                 item.WriteXml(writer);
@@ -78,8 +78,8 @@ namespace ProjectPorcupine.Models
 
         public void ReadXml(XmlReader reader)
         {
-            this.inputs = new List<RecipeItem>();
-            this.outputs = new List<RecipeItem>();
+            this.inputs = new List<Item>();
+            this.outputs = new List<Item>();
 
             scalar = bool.Parse(reader.GetAttribute("scalar"));
 
@@ -93,18 +93,24 @@ namespace ProjectPorcupine.Models
                         XmlReader inputs = recipe.ReadSubtree();
                         while (inputs.Read())
                         {
-                            RecipeItem item = new RecipeItem();
-                            item.ReadXml(inputs);
-                            this.inputs.Add(item);
+                            if (inputs.Name == "Item")
+                            {
+                                Item item = new Item();
+                                item.ReadXml(inputs);
+                                this.inputs.Add(item);
+                            }
                         }
                         break;
                     case "Outputs":
                         XmlReader outputs = recipe.ReadSubtree();
                         while (outputs.Read())
                         {
-                            RecipeItem item = new RecipeItem();
-                            item.ReadXml(outputs);
-                            this.outputs.Add(item);
+                            if (outputs.Name == "Item")
+                            {
+                                Item item = new Item();
+                                item.ReadXml(outputs);
+                                this.outputs.Add(item);
+                            }
                         }
                         break;
                 }

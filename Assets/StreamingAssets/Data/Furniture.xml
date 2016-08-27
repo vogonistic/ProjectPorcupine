@@ -305,14 +305,14 @@
     <UnlocalizedDescription>furn_heater_desc</UnlocalizedDescription>
 
         <Converts>
-            <Recipe scalar="true">
+            <Convert scalar="true">
                 <Inputs>
                     <Item objectType="Raw Iron" quantity="1" />
                 </Inputs>
                 <Outputs>
                     <Item objectType="Steel Plate" quantity="1" />
                 </Outputs>
-            </Recipe>
+            </Convert>
         </Converts>
     </Furniture>
 

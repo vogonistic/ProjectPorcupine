@@ -1,11 +1,12 @@
 #region License
 // ====================================================
 // Project Porcupine Copyright(C) 2016 Team Porcupine
-// This program comes with ABSOLUTELY NO WARRANTY; This is free software, 
-// and you are welcome to redistribute it under certain conditions; See 
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software,
+// and you are welcome to redistribute it under certain conditions; See
 // file LICENSE, which is part of this source code package, for details.
 // ====================================================
 #endregion
+using ProjectPorcupine.Models;
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -57,6 +58,8 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
     private Parameter furnParameters;
 
     private List<Job> jobs;
+
+    private List<Recipe> recipes;
 
     // This is the generic type of object this is, allowing things to interact with it based on it's generic type
     private HashSet<string> typeTags;
@@ -197,7 +200,7 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
     {
         get
         {
-            return isOperating;            
+            return isOperating;
         }
 
         private set
@@ -553,6 +556,21 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
                     reader.Read();
                     UnlocalizedDescription = reader.ReadContentAsString();
                     break;
+
+                case "Recipes":
+                    List<Recipe> recipes = new List<Recipe>();
+                    XmlReader recipiesReader = reader.ReadSubtree();
+
+                    while (recipiesReader.Read())
+                    {
+                        if (recipiesReader.Name == "Recipe")
+                        {
+                            Recipe tmp = new Recipe();
+                            tmp.ReadXml(recipiesReader);
+                            recipes.Add(tmp);
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -683,8 +701,8 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
         }
 
         // We should inform our neighbours that they have just lost a
-        // neighbour regardless of objectType.  
-        // Just trigger their OnChangedCallback. 
+        // neighbour regardless of objectType.
+        // Just trigger their OnChangedCallback.
         if (linksToNeighbour == true)
         {
             for (int xpos = x - 1; xpos < x + fwidth + 1; xpos++)

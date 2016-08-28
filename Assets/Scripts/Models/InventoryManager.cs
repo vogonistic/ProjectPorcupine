@@ -160,7 +160,7 @@ public class InventoryManager
             {
                 if (onlyFromStockpiles)
                 {
-                    if (inventory.tile == null || 
+                    if (inventory.tile == null ||
                         inventory.tile.Furniture == null ||
                         inventory.tile.Furniture.ObjectType != "Stockpile")
                     {
@@ -183,34 +183,51 @@ public class InventoryManager
         return quantity == 0;
     }
 
-    public Path_AStar GetPathToClosestInventoryOfType(string objectType, Tile t, int desiredAmount, bool canTakeFromStockpile)
+    public bool InventoriesOfTypeIsAccessibleSomewhere(string objectType, bool canTakeFromStockpile)
     {
-        QuickCheck(objectType);
+        if (QuickCheck(objectType) == false)
+        {
+            return false;
+        }
 
-        // We can also avoid going through the Astar construction if we know
-        // that all available inventories are stockpiles and we are not allowed
-        // to touch those
+        // If we can't take from a stockpile, and it only exists within stockpiles, we are done.
+        // Note: inventories[objectType] returns all Inventories for this objectType
         if (!canTakeFromStockpile && inventories[objectType].TrueForAll(i => i.tile != null && i.tile.Furniture != null && i.tile.Furniture.IsStockpile()))
         {
-            return null;
+            return false;
         }
 
         // We shouldn't search if all inventories are locked.
         if (inventories[objectType].TrueForAll(i => i.tile != null && i.tile.Furniture != null && i.tile.Inventory != null && i.tile.Inventory.locked))
         {
-            return null;
+            return false;
         }
 
         // Test that there is at least one stack on the floor, otherwise the
         // search below might cause a full map search for nothing.
         if (inventories[objectType].Find(i => i.tile != null) == null)
         {
+            return false;
+        }
+
+        return true;
+    }
+
+    public Path_AStar GetPathToClosestInventoryOfType(string objectType, Tile t, int desiredAmount, bool canTakeFromStockpile)
+    {
+        if (InventoriesOfTypeIsAccessibleSomewhere(objectType, canTakeFromStockpile) == false)
+        {
             return null;
         }
 
-        // We know the objects are out there, now find the closest.
-        Path_AStar path = new Path_AStar(World.Current, t, null, objectType, desiredAmount, canTakeFromStockpile);
-        return path;
+        if (inventories[objectType].Count == 1)
+        {
+            return new Path_AStar(World.Current, t, inventories[objectType][0].tile);
+        }
+        else
+        {
+            return new Path_AStar(World.Current, t, objectType, desiredAmount, canTakeFromStockpile);
+        }
     }
 
     /// <summary>

@@ -6,9 +6,9 @@
 // file LICENSE, which is part of this source code package, for details.
 // ====================================================
 #endregion
+
 using System.Collections.Generic;
 using System.Linq;
-using Priority_Queue;
 using UnityEngine;
 
 public class Path_AStar
@@ -25,145 +25,60 @@ public class Path_AStar
         this.path = path;
     }
 
-    public Path_AStar(World world, Tile tileStart, Tile tileEnd, string objectType = null, int desiredAmount = 0, bool canTakeFromStockpile = false, bool lookingForFurn = false)
+    public Path_AStar(World world, Tile startTile, Tile endTile)
     {
-        // if tileEnd is null, then we are simply scanning for the nearest objectType.
-        // We can do this by ignoring the heuristic component of AStar, which basically
-        // just turns this into an over-engineered Dijkstra's algo
+        Path_Node<Tile> goal = world.tileGraph.nodes[endTile];
 
-        // Check to see if we have a valid tile graph
-        if (world.tileGraph == null)
-        {
-            world.tileGraph = new Path_TileGraph(world);
-        }
+        GoalReachedEvaluator hasReachedGoal = currentPathNode => currentPathNode == goal;
+        CostEstimator costHeuristic = currentPathNode => Heuristic_cost_estimate(currentPathNode, goal);
 
-        // Check to see if we have a valid tile graph
-        if (world.roomGraph == null)
-        {
-            world.roomGraph = new Path_RoomGraph(world);
-        }
-
-        // A dictionary of all valid, walkable nodes.
-        Dictionary<Tile, Path_Node<Tile>> nodes = world.tileGraph.nodes;
-
-        // Make sure our start/end tiles are in the list of nodes!
-        if (nodes.ContainsKey(tileStart) == false)
-        {
-            Debug.ULogErrorChannel("Path_AStar", "The starting tile isn't in the list of nodes!");
-
-            return;
-        }
-
-        Path_Node<Tile> start = nodes[tileStart];
-
-        // if tileEnd is null, then we are simply looking for an inventory object
-        // so just set goal to null.
-        Path_Node<Tile> goal = null;
-        if (tileEnd != null)
-        {
-            if (nodes.ContainsKey(tileEnd) == false)
-            {
-                Debug.ULogErrorChannel("Path_AStar", "The ending tile isn't in the list of nodes!");
-                return;
-            }
-
-            goal = nodes[tileEnd];
-        }
-
-        /*
-         * Mostly following this pseusocode:
-         * https://en.wikipedia.org/wiki/A*_search_algorithm
-         */
-        HashSet<Path_Node<Tile>> closedSet = new HashSet<Path_Node<Tile>>();
-
-        /*
-         * List<Path_Node<Tile>> openSet = new List<Path_Node<Tile>>();
-         *        openSet.Add( start );
-         */
-
-        PathfindingPriorityQueue<Path_Node<Tile>> openSet = new PathfindingPriorityQueue<Path_Node<Tile>>();
-        openSet.Enqueue(start, 0);
-
-        Dictionary<Path_Node<Tile>, Path_Node<Tile>> came_From = new Dictionary<Path_Node<Tile>, Path_Node<Tile>>();
-
-        Dictionary<Path_Node<Tile>, float> g_score = new Dictionary<Path_Node<Tile>, float>();
-        g_score[start] = 0;
-
-        Dictionary<Path_Node<Tile>, float> f_score = new Dictionary<Path_Node<Tile>, float>();
-        f_score[start] = Heuristic_cost_estimate(start, goal);
-
-        while (openSet.Count > 0)
-        {
-            Path_Node<Tile> current = openSet.Dequeue();
-
-            // If we have a POSITIONAL goal, check to see if we are there.
-            if (goal != null)
-            {
-                if (current == goal)
-                {
-                    Reconstruct_path(came_From, current);
-                    return;
-                }
-            }
-            else
-            {
-                // We don't have a POSITIONAL goal, we're just trying to find
-                // some kind of inventory or furniture.  Have we reached it?
-                if (current.data.Inventory != null && current.data.Inventory.objectType == objectType && lookingForFurn == false && current.data.Inventory.locked == false)
-                {
-                    // Type is correct and we are allowed to pick it up
-                    if (canTakeFromStockpile || current.data.Furniture == null || current.data.Furniture.IsStockpile() == false)
-                    {
-                        // Stockpile status is fine
-                        Reconstruct_path(came_From, current);
-                        return;
-                    }
-                }
-
-                if (current.data.Furniture != null && current.data.Furniture.ObjectType == objectType && lookingForFurn)
-                {
-                    // Type is correct
-                    Reconstruct_path(came_From, current);
-                    return;
-                }
-            }
-
-            closedSet.Add(current);
-
-            foreach (Path_Edge<Tile> edge_neighbor in current.edges)
-            {
-                Path_Node<Tile> neighbor = edge_neighbor.node;
-
-                if (closedSet.Contains(neighbor))
-                {
-                    continue; // ignore this already completed neighbor
-                }
-
-                float pathfinding_cost_to_neighbor = neighbor.data.PathfindingCost * Dist_between(current, neighbor);
-
-                float tentative_g_score = g_score[current] + pathfinding_cost_to_neighbor;
-
-                if (openSet.Contains(neighbor) && tentative_g_score >= g_score[neighbor])
-                {
-                    continue;
-                }
-
-                came_From[neighbor] = current;
-                g_score[neighbor] = tentative_g_score;
-                f_score[neighbor] = g_score[neighbor] + Heuristic_cost_estimate(neighbor, goal);
-
-                openSet.EnqueueOrUpdate(neighbor, f_score[neighbor]);
-            } // foreach neighbour
-        } // while
-
-        // If we reached here, it means that we've burned through the entire
-        // openSet without ever reaching a point where current == goal.
-        // This happens when there is no path from start to goal
-        // (so there's a wall or missing floor or something).
-
-        // We don't have a failure state, maybe? It's just that the
-        // path list will be null.
+        Run(world, startTile, hasReachedGoal, costHeuristic);
     }
+
+    public Path_AStar(World world, Tile startTile, string objectType, int desiredAmount = 0, bool canTakeFromStockpile = false, bool lookingForFurn = false)
+    {
+        GoalReachedEvaluator hasReachedGoal = current =>
+        {
+            if (current.data.Inventory != null && current.data.Inventory.objectType == objectType && lookingForFurn == false && current.data.Inventory.locked == false)
+            {
+                // Type is correct and we are allowed to pick it up
+                if (canTakeFromStockpile || current.data.Furniture == null || current.data.Furniture.IsStockpile() == false)
+                {
+                    // Stockpile status is fine
+                    return true;
+                }
+            }
+    
+            if (current.data.Furniture != null && current.data.Furniture.ObjectType == objectType && lookingForFurn)
+            {
+                // Type is correct
+                return true;
+            }
+
+            return false;
+        };
+        CostEstimator costHeuristic = currentPathNode => 0f;
+
+        Run(world, startTile, hasReachedGoal, costHeuristic);
+    }
+
+    public Path_AStar(World world, Tile startTile, GoalReachedEvaluator hasReachedGoal, CostEstimator costHeuristic)
+    {
+        Run(world, startTile, hasReachedGoal, costHeuristic);
+    }
+
+    /// <summary>
+    /// Delegate that will be called to evaluate if the goal has been reached. This
+    /// provides an easier way for us to write different pathfinding goal conditions,
+    /// like example pathfinding to a list of locations.
+    /// </summary>
+    public delegate bool GoalReachedEvaluator(Path_Node<Tile> a);
+
+    /// <summary>
+    /// Delegate that will be called to estimate the the cost for node a with regards to
+    /// the goal currently used.
+    /// </summary>
+    public delegate float CostEstimator(Path_Node<Tile> a);
 
     public Tile Dequeue()
     {
@@ -213,15 +128,109 @@ public class Path_AStar
         return path.ToList();
     }
 
-    private float Heuristic_cost_estimate(Path_Node<Tile> a, Path_Node<Tile> b)
+    protected void Run(World world, Tile tileStart, GoalReachedEvaluator hasReachedGoal, CostEstimator costHeuristic)
     {
-        if (b == null)
+        // if tileEnd is null, then we are simply scanning for the nearest objectType.
+        // We can do this by ignoring the heuristic component of AStar, which basically
+        // just turns this into an over-engineered Dijkstra's algo
+
+        // Check to see if we have a valid tile graph
+        if (world.tileGraph == null)
         {
-            // We have no fixed destination (i.e. probably looking for an inventory item)
-            // so just return 0 for the cost estimate (i.e. all directions as just as good)
-            return 0f;
+            world.tileGraph = new Path_TileGraph(world);
         }
 
+        // Check to see if we have a valid tile graph
+        if (world.roomGraph == null)
+        {
+            world.roomGraph = new Path_RoomGraph(world);
+        }
+
+        // A dictionary of all valid, walkable nodes.
+        Dictionary<Tile, Path_Node<Tile>> nodes = world.tileGraph.nodes;
+
+        // Make sure our start/end tiles are in the list of nodes!
+        if (tileStart == null || nodes.ContainsKey(tileStart) == false)
+        {
+            Debug.ULogErrorChannel("Path_AStar", "The starting tile isn't in the list of nodes!");
+
+            return;
+        }
+
+        Path_Node<Tile> start = nodes[tileStart];
+
+        /*
+         * Mostly following this pseusocode:
+         * https://en.wikipedia.org/wiki/A*_search_algorithm
+         */
+        HashSet<Path_Node<Tile>> closedSet = new HashSet<Path_Node<Tile>>();
+
+        /*
+         * List<Path_Node<Tile>> openSet = new List<Path_Node<Tile>>();
+         *        openSet.Add( start );
+         */
+
+        PathfindingPriorityQueue<Path_Node<Tile>> openSet = new PathfindingPriorityQueue<Path_Node<Tile>>();
+        openSet.Enqueue(start, 0);
+
+        Dictionary<Path_Node<Tile>, Path_Node<Tile>> came_From = new Dictionary<Path_Node<Tile>, Path_Node<Tile>>();
+
+        Dictionary<Path_Node<Tile>, float> g_score = new Dictionary<Path_Node<Tile>, float>();
+        g_score[start] = 0;
+
+        Dictionary<Path_Node<Tile>, float> f_score = new Dictionary<Path_Node<Tile>, float>();
+        f_score[start] = costHeuristic(start);
+
+        while (openSet.Count > 0)
+        {
+            Path_Node<Tile> current = openSet.Dequeue();
+
+            // If we have a POSITIONAL goal, check to see if we are there.
+            if (hasReachedGoal(current))
+            {
+                Reconstruct_path(came_From, current);
+                return;
+            }
+
+            closedSet.Add(current);
+
+            foreach (Path_Edge<Tile> edge_neighbor in current.edges)
+            {
+                Path_Node<Tile> neighbor = edge_neighbor.node;
+
+                if (closedSet.Contains(neighbor))
+                {
+                    continue; // ignore this already completed neighbor
+                }
+
+                float pathfinding_cost_to_neighbor = neighbor.data.PathfindingCost * Dist_between(current, neighbor);
+
+                float tentative_g_score = g_score[current] + pathfinding_cost_to_neighbor;
+
+                if (openSet.Contains(neighbor) && tentative_g_score >= g_score[neighbor])
+                {
+                    continue;
+                }
+
+                came_From[neighbor] = current;
+                g_score[neighbor] = tentative_g_score;
+                f_score[neighbor] = g_score[neighbor] + costHeuristic(neighbor);
+
+                openSet.EnqueueOrUpdate(neighbor, f_score[neighbor]);
+            } // foreach neighbour
+        } // while
+
+        // If we reached here, it means that we've burned through the entire
+        // openSet without ever reaching a point where current == goal.
+        // This happens when there is no path from start to goal
+        // (so there's a wall or missing floor or something).
+
+        // We don't have a failure state, maybe? It's just that the
+        // path list will be null.
+    }
+
+    private float Heuristic_cost_estimate(Path_Node<Tile> a, Path_Node<Tile> b)
+    {
         return Mathf.Sqrt(
             Mathf.Pow(a.data.X - b.data.X, 2) +
             Mathf.Pow(a.data.Y - b.data.Y, 2));

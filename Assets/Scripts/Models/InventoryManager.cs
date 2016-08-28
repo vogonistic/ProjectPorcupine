@@ -174,7 +174,7 @@ public class InventoryManager
         }
 
         // We know the objects are out there, now find the closest.
-        Path_AStar path = new Path_AStar(World.Current, t, null, objectType, desiredAmount, canTakeFromStockpile);
+        Path_AStar path = new Path_AStar(World.Current, t, objectType, desiredAmount, canTakeFromStockpile);
         return path;
     }
 

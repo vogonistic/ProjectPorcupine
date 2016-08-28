@@ -523,7 +523,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         if (MyJob.IsNeed)
         {
             // This will calculate a path from curr to dest.
-            pathAStar = new Path_AStar(World.Current, CurrTile, DestTile, need.RestoreNeedFurn.ObjectType, 0, false, true);
+            pathAStar = new Path_AStar(World.Current, CurrTile, need.RestoreNeedFurn.ObjectType, 0, false, true);
         }
         else
         {
@@ -607,7 +607,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
 
         if (MyJob != null && MyJob.IsNeed && MyJob.Critical == false)
         {
-            MyJob.tile = jobTile = new Path_AStar(World.Current, CurrTile, null, MyJob.JobObjectType, 0, false, true).EndTile();
+            MyJob.tile = jobTile = new Path_AStar(World.Current, CurrTile, MyJob.JobObjectType, 0, false, true).EndTile();
         }
 
         if (MyJob == null || MyJob.MaterialNeedsMet())

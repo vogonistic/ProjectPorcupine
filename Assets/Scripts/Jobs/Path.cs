@@ -34,6 +34,15 @@ namespace ProjectPorcupine.Jobs
         /// Dictionaries with all the inventorie changes how they are now for this path
         public Dictionary<Tile, Inventory> inventoryChanges = new Dictionary<Tile, Inventory>();
 
+        public Tile currentTile
+        {
+            get
+            {
+                Action action = Actions.Last();
+                return action != null ? action.Tile : null;
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProjectPorcupine.Jobs.Path"/> class.
         /// </summary>

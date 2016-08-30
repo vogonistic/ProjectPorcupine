@@ -213,6 +213,10 @@ public class InventoryManager
         return path;
     }
 
+    /// <summary>
+    /// Checks if stackSize has reached 0 and might need to be destroyed
+    /// </summary>
+    /// <param name="inv">Inventory instance</param>
     public void CleanupInventory(Inventory inv)
     {
         if (inv.StackSize == 0)

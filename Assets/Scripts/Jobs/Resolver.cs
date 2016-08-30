@@ -35,7 +35,7 @@ namespace ProjectPorcupine.Jobs
         }
 
         // Function delegate for returning possible actions.
-        public delegate List<Action> ActionDelegate(Needs conditions, Path CurrentPath);
+        public delegate List<Action> ActionDelegate(Needs conditions,Path CurrentPath);
 
         // One stop shop. Runs the whole thing.
         public void DoThings()
@@ -46,9 +46,9 @@ namespace ProjectPorcupine.Jobs
 
             // Get needs steel plates
             Goal buildAWall = new Goal(
-                "Build a Wall", 
-                World.Current.GetTileAt(0, 0), 
-                new Needs()
+                                  "Build a Wall", 
+                                  World.Current.GetTileAt(0, 0), 
+                                  new Needs()
                 {
                     { steelPlateResource, 5 },
                     { iceResource, 20 }
@@ -172,12 +172,14 @@ namespace ProjectPorcupine.Jobs
 
                     // There is probably a beter way then setting the desired amount to the needed resource but for now I am testing if this works
                     // TODO: Currently I let this run from the center location --> this should be the position of the character running this code
-                    Path_AStar path = inventoryManagerReference.GetPathToClosestInventoryOfType(resourceWeNeed, World.Current.GetCenterTile(), toFetch, true);
+                    Path_AStar path = inventoryManagerReference.GetPathToClosestInventoryOfType(resourceWeNeed, currentPath.currentTile, toFetch, true);
 
                     Action ac = new Action(
                                     "Fetch " + resourceWeNeed,
                                     path.Length(),
                                     path.EndTile());
+
+//                    inventoryManagerReference.
 
                     // Save changes in inventoryBeforeChanges so that we can rollback to them after we are done resolving
                     Inventory newInventory = path.EndTile().Inventory;

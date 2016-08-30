@@ -41,3 +41,6 @@ sysinfo.txt
 # Localization files
 /Assets/StreamingAssets/Localization/*
 /Assets/StreamingAssets/Localization.meta
+
+# Editor configuration and extras
+.atomignore

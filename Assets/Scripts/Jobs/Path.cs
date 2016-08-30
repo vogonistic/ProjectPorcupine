@@ -30,7 +30,7 @@ namespace ProjectPorcupine.Jobs
         public Queue<Action> Actions = new Queue<Action>();
 
         // I do not like this but for now I will keep it like this... It should also only save the coordnates of the tile.
-
+        // the idea was to buffer changes as there could be multiple paths and I tricked the inventoryManager --> This should definitely be changed as resource wise this is very inefficient
         /// Dictionaries with all the inventorie changes how they are now for this path
         public Dictionary<Tile, Inventory> inventoryChanges = new Dictionary<Tile, Inventory>();
 
@@ -72,7 +72,7 @@ namespace ProjectPorcupine.Jobs
             Fulfilled = new Needs(other.Fulfilled);
             Fulfilled += action.Provides;
             Actions = new Queue<Action>(other.Actions); // Should this also be value based?
-            inventoryChanges = CloneDictionary(other.inventoryChanges);
+            inventoryChanges = CloneDictionary(other.inventoryChanges); // We need another Instance of this dictionary for every new Path in memory
 
             Actions.Enqueue(action);
         }
@@ -109,6 +109,11 @@ namespace ProjectPorcupine.Jobs
             return output;
         }
 
+        /// <summary>
+        /// Completely clones the dictionary. This could be moved to a generic Utilities Class With a generic Dictionary
+        /// </summary>
+        /// <param name="dictionary"></param>
+        /// <returns></returns>
         private Dictionary<Tile, Inventory> CloneDictionary(Dictionary<Tile, Inventory> dictionary)
         {
             Dictionary<Tile, Inventory> ret = new Dictionary<Tile, Inventory>();

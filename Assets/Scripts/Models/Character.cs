@@ -253,7 +253,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
             // put it into the waiting queue.
             // Also create a callback for when an inventory gets created.
             // Lastly, remove the job from "MyJob".
-            World.Current.jobWaitingQueue.Enqueue(MyJob);
+            World.Current.jobsManager.EnqueueWaiting(MyJob);
             World.Current.OnInventoryCreated += OnInventoryCreated;
             MyJob.OnJobStopped -= OnJobStopped;
             MyJob = null;
@@ -262,7 +262,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         {
             // If the job gets abandoned because of pathing issues or something else,
             // just put it into the normal job queue and remove the job from "MyJob".
-            World.Current.jobQueue.Enqueue(MyJob);
+            World.Current.jobsManager.Enqueue(MyJob);
             MyJob.OnJobStopped -= OnJobStopped;
             MyJob = null;
         }
@@ -271,7 +271,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
     public void PrioritizeJob(Job job)
     {
         AbandonJob(false);
-        World.Current.jobQueue.Remove(job);
+        World.Current.jobsManager.Remove(job);
         job.IsBeingWorked = true;
 
         /*Check if the character is carrying any materials and if they could be used for the new job,
@@ -586,7 +586,8 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
 
         // Get the first job on the queue.
         if (MyJob == null)
-        {
+        {// This is where I change things!
+            /*
             MyJob = World.Current.jobQueue.Dequeue();
 
             // Check if we got a job from the queue.
@@ -613,7 +614,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
                 {
                     Debug.ULogChannel("Character", name + " found a job at x " + MyJob.tile.X + " y " + MyJob.tile.Y + ".");
                 }
-            }
+            }*/
         }
 
         // Get our destination from the job.
@@ -1032,7 +1033,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         World.Current.OnInventoryCreated -= OnInventoryCreated;
 
         // Get the relevant job and dequeue it from the waiting queue.
-        Job job = World.Current.jobWaitingQueue.Dequeue();
+        Job job = World.Current.jobsManager.DequeueWaiting();
 
         // Check if the initial job still exists.
         // It could have been deleted through the user
@@ -1046,13 +1047,13 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
             {
                 // If so, enqueue the job onto the (normal)
                 // job queue.
-                World.Current.jobQueue.Enqueue(job);
+                World.Current.jobsManager.Enqueue(job);
             }
             else
             {
                 // If not, (re)enqueue the job onto the waiting queu
                 // and also register a callback for the future.
-                World.Current.jobWaitingQueue.Enqueue(job);
+                World.Current.jobsManager.EnqueueWaiting(job);
                 World.Current.OnInventoryCreated += OnInventoryCreated;
             }
         }

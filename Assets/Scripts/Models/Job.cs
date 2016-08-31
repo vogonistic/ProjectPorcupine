@@ -277,8 +277,8 @@ public class Job : ISelectable
         }
 
         // Remove the job out of both job queues.
-        World.Current.jobWaitingQueue.Remove(this);
-        World.Current.jobQueue.Remove(this);
+        World.Current.jobsManager.RemoveWaiting(this);
+        World.Current.jobsManager.Remove(this);
     }
 
     public bool MaterialNeedsMet()

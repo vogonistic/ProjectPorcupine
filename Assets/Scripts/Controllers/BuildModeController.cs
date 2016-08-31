@@ -140,7 +140,7 @@ public class BuildModeController
                         }
                     }
 
-                    WorldController.Instance.World.jobQueue.Enqueue(j);
+                    WorldController.Instance.World.jobsManager.Enqueue(j);
                 }
             }
         }
@@ -179,7 +179,7 @@ public class BuildModeController
                             theJob.tile.PendingBuildJob = null;
                         };
                     
-                    WorldController.Instance.World.jobQueue.Enqueue(j);
+                    WorldController.Instance.World.jobsManager.Enqueue(j);
                 }
             }
         }

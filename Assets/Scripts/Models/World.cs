@@ -33,18 +33,13 @@ public class World : IXmlSerializable
     // Store all temperature information
     public Temperature temperature;
 
+    public ProjectPorcupine.Jobs.Manager jobsManager;
+
     // The pathfinding graph used to navigate our world map.
     public Path_TileGraph tileGraph;
     public Path_RoomGraph roomGraph;
 
     public Wallet Wallet;
-
-    // TODO: Most likely this will be replaced with a dedicated
-    // class for managing job queues (plural!) that might also
-    // be semi-static or self initializing or some damn thing.
-    // For now, this is just a PUBLIC member of World
-    public JobQueue jobQueue;
-    public JobQueue jobWaitingQueue;
 
     // A two-dimensional array to hold our tile data.
     private Tile[,] tiles;
@@ -607,8 +602,7 @@ public class World : IXmlSerializable
         // Setup furniture actions before any other things are loaded.
         new FurnitureActions();
 
-        jobQueue = new JobQueue();
-        jobWaitingQueue = new JobQueue();
+        jobsManager = new ProjectPorcupine.Jobs.Manager();
 
         // Set the current world to be this world.
         // TODO: Do we need to do any cleanup of the old world?

@@ -1,4 +1,13 @@
-﻿using System.Collections.Generic;
+﻿#region License
+// ====================================================
+// Project Porcupine Copyright(C) 2016 Team Porcupine
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software, 
+// and you are welcome to redistribute it under certain conditions; See 
+// file LICENSE, which is part of this source code package, for details.
+// ====================================================
+#endregion
+
+using System.Collections.Generic;
 using UnityEngine.Assertions;
 
 namespace ProjectPorcupine.Jobs
@@ -26,11 +35,6 @@ namespace ProjectPorcupine.Jobs
             overrides = new Dictionary<Tile, int>(other.overrides);
         }
 
-        public InventoryManagerOverride Clone()
-        {
-            return new InventoryManagerOverride(this);
-        }
-
         public int Count
         {
             get
@@ -39,6 +43,11 @@ namespace ProjectPorcupine.Jobs
             }
         }
 
+        public InventoryManagerOverride Clone()
+        {
+            return new InventoryManagerOverride(this);
+        }
+            
         public void AddAction(Action action)
         {
             Assert.IsTrue(action.Provides.Count <= 1 && action.Requires.Count <= 1);
@@ -117,7 +126,7 @@ namespace ProjectPorcupine.Jobs
                 return null;
             }
 
-//            return new Path_AStar(World.Current, startTile, needType, needAmount, true);
+            // return new Path_AStar(World.Current, startTile, needType, needAmount, true);
             Path_AStar.GoalReachedEvaluator hasReachedGoal = pathNode =>
             {
                 // It's in the overrides, so we are skipping other checks
@@ -163,4 +172,3 @@ namespace ProjectPorcupine.Jobs
         }
     }
 }
-

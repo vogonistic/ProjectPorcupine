@@ -13,25 +13,28 @@ namespace ProjectPorcupine.Jobs
     {
         public string Name;
         public Needs Requires;
-        public Tile Tile;
+        public Tile StartTile;
+        public Tile GoalTile;
 
-        public Goal(string name, Tile tile, Needs needs)
+        public Goal(string name, Tile startingTile, Tile goalTile, Needs needs)
         {
             Name = name;
-            Tile = tile;
+            StartTile = startingTile;
+            GoalTile = goalTile;
             Requires = needs;
         }
 
         public Goal(Goal other)
         {
             this.Name = other.Name;
-            this.Tile = other.Tile;
+            this.StartTile = other.StartTile;
+            this.GoalTile = other.GoalTile;
             this.Requires = other.Requires;
         }
 
         public override string ToString()
         {
-            return string.Format("[Goal name: {0}, tile: {1}, requires: ({2})]", Name, Tile, Requires);
+            return string.Format("[Goal name: {0}, tile: {1}, requires: ({2})]", Name, GoalTile, Requires);
         }
     }
 }

@@ -9,6 +9,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ProjectPorcupine.Jobs
 {
@@ -55,7 +56,7 @@ namespace ProjectPorcupine.Jobs
 
             return ret;
         }
-            
+
         public static Needs Intersection(Needs a, Needs b)
         {
             Needs ret = new Needs();
@@ -115,6 +116,11 @@ namespace ProjectPorcupine.Jobs
             {
                 return 0;
             }
+        }
+
+        public string FirstKey()
+        {
+            return data.Keys.ElementAt(0);
         }
 
         public IEnumerator GetEnumerator()

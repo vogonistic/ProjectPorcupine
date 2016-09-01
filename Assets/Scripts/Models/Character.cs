@@ -253,7 +253,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
             // put it into the waiting queue.
             // Also create a callback for when an inventory gets created.
             // Lastly, remove the job from "MyJob".
-            World.Current.jobsManager.Enqueue(MyJob);
+            World.Current.jobManager.Enqueue(MyJob);
             MyJob.OnJobStopped -= OnJobStopped;
             MyJob = null;
         }
@@ -261,7 +261,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         {
             // If the job gets abandoned because of pathing issues or something else,
             // just put it into the normal job queue and remove the job from "MyJob".
-            World.Current.jobsManager.Enqueue(MyJob);
+            World.Current.jobManager.Enqueue(MyJob);
             MyJob.OnJobStopped -= OnJobStopped;
             MyJob = null;
         }
@@ -270,7 +270,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
     public void PrioritizeJob(Job job)
     {
         AbandonJob(false);
-        World.Current.jobsManager.Remove(job);
+        World.Current.jobManager.Remove(job);
         job.IsBeingWorked = true;
 
         /*Check if the character is carrying any materials and if they could be used for the new job,
@@ -586,7 +586,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         // Get the first job on the queue.
         if (MyJob == null)
         {
-            MyJob = World.Current.jobsManager.GetJob(this);
+            MyJob = World.Current.jobManager.GetJob(this);
 
             // Check if we got a job from the queue.
             if (MyJob == null)

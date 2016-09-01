@@ -277,7 +277,7 @@ public class Job : ISelectable
         }
 
         // Remove the job from job queue.
-        World.Current.jobsManager.Remove(this);
+        World.Current.jobManager.Remove(this);
     }
 
     public bool MaterialNeedsMet()

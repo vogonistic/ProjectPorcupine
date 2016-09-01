@@ -33,7 +33,7 @@ public class World : IXmlSerializable
     // Store all temperature information
     public Temperature temperature;
 
-    public ProjectPorcupine.Jobs.Manager jobsManager;
+    public ProjectPorcupine.Jobs.Manager jobManager;
 
     // The pathfinding graph used to navigate our world map.
     public Path_TileGraph tileGraph;
@@ -602,7 +602,7 @@ public class World : IXmlSerializable
         // Setup furniture actions before any other things are loaded.
         new FurnitureActions();
 
-        jobsManager = new ProjectPorcupine.Jobs.Manager();
+        jobManager = new ProjectPorcupine.Jobs.Manager();
 
         // Set the current world to be this world.
         // TODO: Do we need to do any cleanup of the old world?

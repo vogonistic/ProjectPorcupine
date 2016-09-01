@@ -15,34 +15,6 @@ namespace ProjectPorcupine.Models
 {
     public class Convert : IXmlSerializable
     {
-        public class Item : IXmlSerializable
-        {
-            // TODO make this better
-            private string objectType;
-            private int quantity;
-
-            #region Xml Serialization Infrastructure
-
-            public void WriteXml(XmlWriter writer)
-            {
-                writer.WriteAttributeString("objectType", objectType);
-                writer.WriteAttributeString("quantity", quantity.ToString());
-            }
-
-            public void ReadXml(XmlReader reader)
-            {
-                objectType = reader.GetAttribute("objectType");
-                quantity = int.Parse(reader.GetAttribute("quantity"));
-            }
-
-            public XmlSchema GetSchema()
-            {
-                return null;
-            }
-
-            #endregion
-        }
-
         private List<Item> inputs;
         private List<Item> outputs;
 
@@ -62,6 +34,7 @@ namespace ProjectPorcupine.Models
                 item.WriteXml(writer);
                 writer.WriteEndElement();
             }
+
             writer.WriteEndElement();
 
             writer.WriteStartElement("Outputs");
@@ -71,6 +44,7 @@ namespace ProjectPorcupine.Models
                 item.WriteXml(writer);
                 writer.WriteEndElement();
             }
+
             writer.WriteEndElement();
 
             writer.WriteEndElement();
@@ -100,6 +74,7 @@ namespace ProjectPorcupine.Models
                                 this.inputs.Add(item);
                             }
                         }
+
                         break;
                     case "Outputs":
                         XmlReader outputs = recipe.ReadSubtree();
@@ -112,6 +87,7 @@ namespace ProjectPorcupine.Models
                                 this.outputs.Add(item);
                             }
                         }
+
                         break;
                 }
             }
@@ -123,6 +99,33 @@ namespace ProjectPorcupine.Models
         }
 
         #endregion
+
+        public class Item : IXmlSerializable
+        {
+            // TODO make this better
+            private string objectType;
+            private int quantity;
+
+            #region Xml Serialization Infrastructure
+
+            public void WriteXml(XmlWriter writer)
+            {
+                writer.WriteAttributeString("objectType", objectType);
+                writer.WriteAttributeString("quantity", quantity.ToString());
+            }
+
+            public void ReadXml(XmlReader reader)
+            {
+                objectType = reader.GetAttribute("objectType");
+                quantity = int.Parse(reader.GetAttribute("quantity"));
+            }
+
+            public XmlSchema GetSchema()
+            {
+                return null;
+            }
+
+            #endregion
+        }
     }
 }
-

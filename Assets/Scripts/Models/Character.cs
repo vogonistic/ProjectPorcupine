@@ -586,19 +586,17 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
 
         // Get the first job on the queue.
         if (MyJob == null)
-        {// This is where I change things!
-            /*
-            MyJob = World.Current.jobQueue.Dequeue();
+        {
+            MyJob = World.Current.jobsManager.Dequeue();
 
             // Check if we got a job from the queue.
             if (MyJob == null)
             {
-                Debug.ULogChannel("Character", name + " did not find a job.");
                 MyJob = new Job(
                     CurrTile,
                     "Waiting",
                     null,
-                    UnityEngine.Random.Range(0.1f, 0.5f),
+                    UnityEngine.Random.Range(0.25f, 1.0f),
                     null,
                     Job.JobPriority.Low,
                     false);
@@ -612,9 +610,9 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
                 }
                 else
                 {
-                    Debug.ULogChannel("Character", name + " found a job at x " + MyJob.tile.X + " y " + MyJob.tile.Y + ".");
+                    Debug.ULogChannel("Character", name + " found a job at " + MyJob.tile + ".");
                 }
-            }*/
+            }
         }
 
         // Get our destination from the job.

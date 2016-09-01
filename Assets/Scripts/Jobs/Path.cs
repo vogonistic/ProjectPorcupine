@@ -14,44 +14,15 @@ namespace ProjectPorcupine.Jobs
 {
     public class Path
     {
-        /// Final goal.
-        public Goal Goal;
-
-        /// Total cost in time for all actions.
-        public int Cost;
-
-        /// Conditions not yet fulfilled.
-        public Needs Unfulfilled;
-
-        /// Conditions that are fulfilled.
-        public Needs Fulfilled = new Needs();
-
-        /// List of found actions
-        public Queue<Action> Actions = new Queue<Action>();
-
-        // I do not like this but for now I will keep it like this... It should also only save the coordnates of the tile.
-        // the idea was to buffer changes as there could be multiple paths and I tricked the inventoryManager --> This should definitely be changed as resource wise this is very inefficient
-        /// Dictionaries with all the inventorie changes how they are now for this path
-        public InventoryManagerOverride InventoryOverride;
-
-        public Tile currentTile
-        {
-            get
-            {
-                if (Actions.Count == 0)
-                    return Goal.StartTile;
-                
-                Action action = Actions.Last();
-                return action != null ? action.Tile : null;
-            }
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ProjectPorcupine.Jobs.Path"/> class.
         /// </summary>
         /// <param name="goal">Initial Goal.</param>
         public Path(Goal goal, InventoryManager inventoryManager)
         {
+            Fulfilled = new Needs();
+            Actions = new Queue<Action>();
+
             Goal = goal;
             Unfulfilled = goal.Requires;
             InventoryOverride = new InventoryManagerOverride(inventoryManager);
@@ -64,6 +35,9 @@ namespace ProjectPorcupine.Jobs
         /// <param name="action">Action to add to the PathToGoal.</param>
         public Path(Path other, Action action)
         {
+            Fulfilled = new Needs();
+            Actions = new Queue<Action>();
+
             Goal = other.Goal;
             Cost = other.Cost + action.Cost;
 
@@ -81,6 +55,39 @@ namespace ProjectPorcupine.Jobs
             InventoryOverride.AddAction(action);
 
             Actions.Enqueue(action);
+        }
+
+        /// Final goal.
+        public Goal Goal { get; private set; }
+
+        /// Total cost in time for all actions.
+        public int Cost { get; private set; }
+
+        /// Conditions not yet fulfilled.
+        public Needs Unfulfilled { get; private set; }
+
+        /// Conditions that are fulfilled.
+        public Needs Fulfilled { get; private set; }
+
+        /// List of found actions
+        public Queue<Action> Actions { get; private set; }
+
+        /// Dictionaries with all the inventorie changes how they are now for this path
+        public InventoryManagerOverride InventoryOverride { get; private set; }
+
+        /// The tile that all further pathfinding should start from.
+        public Tile CurrentTile
+        {
+            get
+            {
+                if (Actions.Count == 0)
+                {
+                    return Goal.StartTile;
+                }
+
+                Action action = Actions.Last();
+                return action != null ? action.Tile : null;
+            }
         }
 
         /// <summary>

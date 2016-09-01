@@ -1,8 +1,8 @@
 ﻿#region License
 // ====================================================
 // Project Porcupine Copyright(C) 2016 Team Porcupine
-// This program comes with ABSOLUTELY NO WARRANTY; This is free software, 
-// and you are welcome to redistribute it under certain conditions; See 
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software,
+// and you are welcome to redistribute it under certain conditions; See
 // file LICENSE, which is part of this source code package, for details.
 // ====================================================
 #endregion
@@ -33,7 +33,20 @@ namespace ProjectPorcupine.Jobs
         }
 
         // Function delegate for returning possible actions.
-        public delegate List<Action> ActionDelegate(Needs conditions,Path CurrentPath);
+        public delegate List<Action> ActionDelegate(Needs conditions, Path currentPath);
+
+        #if true
+        public static void Trace(string message)
+        {
+            Debug.Log("JOB UTILS: " + message);
+
+            // Doesn't do multi line messages:
+            // Debug.ULogChannel("JobUtils", message);
+        }
+        #else
+        private void Trace(string message) {
+        }
+        #endif
 
         // One stop shop. Runs the whole thing.
         public void DoThings()
@@ -46,10 +59,10 @@ namespace ProjectPorcupine.Jobs
             Goal buildAWall = new Goal(
                                   "Build a Wall",
                                   World.Current.GetTileAt(50, 50),
-                                  World.Current.GetTileAt(51, 51), 
+                                  World.Current.GetTileAt(51, 51),
                                   new Needs()
                 {
-//                    { steelPlateResource, 5 },
+                    // { steelPlateResource, 5 },
                     { iceResource, 20 }
                 });
 
@@ -65,19 +78,6 @@ namespace ProjectPorcupine.Jobs
                 Trace("No path found :sad:");
             }
         }
-
-        #if true
-        public static void Trace(string message)
-        {
-            Debug.Log("JOB UTILS: " + message);
-
-            // Doesn't do multi line messages:
-            // Debug.ULogChannel("JobUtils", message);
-        }
-        #else
-        private void Trace(string message) {
-        }
-        #endif
 
         // Runs until we've solved the problem or exhausted the potential solutions.
         private Path Resolve(Goal g)
@@ -136,7 +136,6 @@ namespace ProjectPorcupine.Jobs
                         pathsToExplore.Enqueue(newPath, newPath.Cost);
                     }
                 }
-
             }
             while (pathsToExplore.Count > 0);
 
@@ -157,7 +156,7 @@ namespace ProjectPorcupine.Jobs
             // Loop through the Inventory Manager
             foreach (string resourceWeNeed in conditions)
             {
-                Path_AStar path = currentPath.InventoryOverride.FindNeed(currentPath.currentTile, resourceWeNeed);
+                Path_AStar path = currentPath.InventoryOverride.FindNeed(currentPath.CurrentTile, resourceWeNeed);
 
                 if (path != null && path.Length() > 0)
                 {

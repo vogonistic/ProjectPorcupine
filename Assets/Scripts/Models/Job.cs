@@ -276,8 +276,7 @@ public class Job : ISelectable
             OnJobStopped(this);
         }
 
-        // Remove the job out of both job queues.
-        World.Current.jobsManager.RemoveWaiting(this);
+        // Remove the job from job queue.
         World.Current.jobsManager.Remove(this);
     }
 
@@ -361,7 +360,7 @@ public class Job : ISelectable
         {
             if (this.acceptsAny == false)
             {
-                if (World.Current.inventoryManager.QuickCheck(inv.objectType) == false)
+                if (World.Current.inventoryManager.InventoriesOfTypeIsAccessibleSomewhere(inv.objectType, canTakeFromStockpile) == false)
                 {
                     // the job requires ALL inventory requirements to be met, and there is no source of a desired objectType
                     return null;
@@ -371,7 +370,7 @@ public class Job : ISelectable
                     fulfillableInventoryRequirements.Add(inv.objectType);
                 }
             }
-            else if (World.Current.inventoryManager.QuickCheck(inv.objectType))
+            else if (World.Current.inventoryManager.InventoriesOfTypeIsAccessibleSomewhere(inv.objectType, canTakeFromStockpile))
             {
                 // there is a source for a desired objectType that the job will accept
                 fulfillableInventoryRequirements.Add(inv.objectType);

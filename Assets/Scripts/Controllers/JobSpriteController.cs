@@ -27,11 +27,6 @@ public class JobSpriteController : BaseSpriteController<Job>
             OnCreated(job);
         }
 
-        foreach (Job job in world.jobsManager.PeekJobsWaiting())
-        {
-            OnCreated(job);
-        }
-
         foreach (Character character in world.characters)
         {
             if (character.MyJob != null)
@@ -46,12 +41,6 @@ public class JobSpriteController : BaseSpriteController<Job>
         world.jobsManager.OnJobCreated -= OnCreated;
 
         foreach (Job job in world.jobsManager.PeekJobs())
-        {
-            job.OnJobCompleted -= OnRemoved;
-            job.OnJobStopped -= OnRemoved;
-        }
-
-        foreach (Job job in world.jobsManager.PeekJobsWaiting())
         {
             job.OnJobCompleted -= OnRemoved;
             job.OnJobStopped -= OnRemoved;

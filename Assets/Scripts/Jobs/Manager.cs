@@ -17,65 +17,63 @@ namespace ProjectPorcupine.Jobs
     {
         // TODO: find a better, room based, implementation of this!
         private JobQueue jobQueue;
-        private JobQueue jobWaitingQueue;
 
         public Manager()
         {
             jobQueue = new JobQueue();
-            jobWaitingQueue = new JobQueue();
         }
 
         // This NEEDS to be removed and changed AS SOON as the new impl is made!
         public event Action<Job> OnJobCreated;
 
-        public void Enqueue(Job j)
+        public void Enqueue(Job job)
         {
-            jobQueue.Enqueue(j);
+            jobQueue.Enqueue(job);
 
             if (OnJobCreated != null)
             {
-                OnJobCreated(j);
+                OnJobCreated(job);
             }
         }
 
-        public void EnqueueWaiting(Job j)
+        public void Remove(Job job)
         {
-            jobWaitingQueue.Enqueue(j);
+            jobQueue.Remove(job);
+        }
 
-            if (OnJobCreated != null)
+        public Job GetJob(Character character)
+        {
+            // Prioritize jobs with the same type as last job
+            // Prioritize jobs from the same room as the character is in
+
+            foreach (Job job in PeekJobs())
             {
-                OnJobCreated(j);
+                // Test that character can do job
+                // TODO
+
+                // Test that job can be fulfilled
+                // TODO: We will probably need something faster than this.
+                // Should InventoryManager keep a running count of stack sizes? Is it notified when they change?
+                if (job.FulfillableInventoryRequirements() == null)
+                {
+                    continue;
+                }
+
+                // Ask character for affinity (What do we do with this?)
+                // TODO
+
+                // We can do this job. Remove is safe because we return immediately
+                jobQueue.Remove(job);
+                return job;
             }
-        }
 
-        public void Remove(Job j)
-        {
-            jobQueue.Remove(j);
-        }
-
-        public void RemoveWaiting(Job j)
-        {
-            jobWaitingQueue.Remove(j);
-        }
-
-        public Job Dequeue()
-        {
-            return jobQueue.Dequeue();
-        }
-
-        public Job DequeueWaiting()
-        {
-            return jobWaitingQueue.Dequeue();
+            // No jobs available
+            return null;
         }
 
         public IEnumerable<Job> PeekJobs()
         {
             return jobQueue.PeekJobs();
-        }
-
-        public IEnumerable<Job> PeekJobsWaiting()
-        {
-            return jobWaitingQueue.PeekJobs();
         }
     }
 }

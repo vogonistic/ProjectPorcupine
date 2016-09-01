@@ -253,8 +253,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
             // put it into the waiting queue.
             // Also create a callback for when an inventory gets created.
             // Lastly, remove the job from "MyJob".
-            World.Current.jobsManager.EnqueueWaiting(MyJob);
-            World.Current.OnInventoryCreated += OnInventoryCreated;
+            World.Current.jobsManager.Enqueue(MyJob);
             MyJob.OnJobStopped -= OnJobStopped;
             MyJob = null;
         }
@@ -587,7 +586,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         // Get the first job on the queue.
         if (MyJob == null)
         {
-            MyJob = World.Current.jobsManager.Dequeue();
+            MyJob = World.Current.jobsManager.GetJob(this);
 
             // Check if we got a job from the queue.
             if (MyJob == null)
@@ -1023,37 +1022,5 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         }
 
         MyJob = null;
-    }
-
-    private void OnInventoryCreated(Inventory inv)
-    {
-        // First remove the callback.
-        World.Current.OnInventoryCreated -= OnInventoryCreated;
-
-        // Get the relevant job and dequeue it from the waiting queue.
-        Job job = World.Current.jobsManager.DequeueWaiting();
-
-        // Check if the initial job still exists.
-        // It could have been deleted through the user
-        // cancelling the job manually.
-        if (job != null)
-        {
-            List<string> desired = job.FulfillableInventoryRequirements();
-
-            // Check if the created inventory can fulfill the waiting job requirements.
-            if (desired != null && desired.Contains(inv.objectType))
-            {
-                // If so, enqueue the job onto the (normal)
-                // job queue.
-                World.Current.jobsManager.Enqueue(job);
-            }
-            else
-            {
-                // If not, (re)enqueue the job onto the waiting queu
-                // and also register a callback for the future.
-                World.Current.jobsManager.EnqueueWaiting(job);
-                World.Current.OnInventoryCreated += OnInventoryCreated;
-            }
-        }
     }
 }

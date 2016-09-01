@@ -27,6 +27,8 @@ namespace ProjectPorcupine.Jobs
         // Contains a list of functions that checks for possible actions.
         private List<ActionDelegate> possibleActions = new List<ActionDelegate>();
 
+        public static int maxCarryCharacter = 5;
+
         public Resolver(InventoryManager invManager)
         {
             inventoryManagerReference = invManager;
@@ -53,6 +55,7 @@ namespace ProjectPorcupine.Jobs
         {
             // Add the fetch action
             possibleActions.Add(FetchAction);
+            //possibleActions.Add(DropAction);
             possibleActions.Add(SmeltAction);
 
             // Get needs steel plates
@@ -126,6 +129,11 @@ namespace ProjectPorcupine.Jobs
                         // Create a new path for each.
                         Path newPath = new Path(currentPath, nextAction);
 
+                        if(newPath.CurrentItem.StackSize == maxCarryCharacter)
+                        {
+                            newPath = new Path(newPath, DropAction(newPath));
+                        }
+
                         // Yay! Found it!
                         if (newPath.IsDone())
                         {
@@ -156,11 +164,27 @@ namespace ProjectPorcupine.Jobs
             // Loop through the Inventory Manager
             foreach (string resourceWeNeed in conditions)
             {
+                int currentStack = 0;
+
+                if(currentPath != null && currentPath.CurrentItem != null && maxCarryCharacter <= currentPath.CurrentItem.StackSize)
+                {
+                    continue;
+                }
+                else if(currentPath != null && currentPath.CurrentItem != null)
+                {
+                    currentStack = currentPath.CurrentItem.StackSize;
+                }
+
                 Path_AStar path = currentPath.InventoryOverride.FindNeed(currentPath.CurrentTile, resourceWeNeed);
 
                 if (path != null && path.Length() > 0)
                 {
                     int toFetch = conditions.Value(resourceWeNeed);
+
+                    if (toFetch + currentStack > maxCarryCharacter)
+                    {
+                        toFetch = maxCarryCharacter - currentStack;
+                    }
 
                     Action ac = new Action(
                                     "Fetch " + resourceWeNeed,
@@ -168,8 +192,19 @@ namespace ProjectPorcupine.Jobs
                                     path.EndTile());
 
                     int tileStackSize = path.EndTile().Inventory.StackSize;
+                    int fetched = toFetch < tileStackSize ? toFetch : tileStackSize;
 
-                    ac.AddProvides(resourceWeNeed, toFetch < tileStackSize ? toFetch : tileStackSize);
+                    if (currentPath.CurrentItem == null)
+                    {
+                        currentPath.CurrentItem = path.EndTile().Inventory.Clone();
+                        currentPath.CurrentItem.StackSize = fetched;
+                    }
+                    else
+                    {
+                        currentPath.CurrentItem.StackSize += fetched;
+                    }
+
+                    ac.AddProvides(resourceWeNeed, fetched);
                     actions.Add(ac);
                 }
             }
@@ -177,6 +212,25 @@ namespace ProjectPorcupine.Jobs
             Trace(string.Format(" - Found {0} actions", actions.Count));
 
             return actions;
+        }
+
+        private Action DropAction(Path currentPath)
+        {
+            if(currentPath.CurrentItem != null)
+            {
+                // We need some way to estimate the cost to drop it off from where we are now
+                // It could be better for the character to take and drop of all the iron that is near with an not so full inventory then it is to go fetch some iron on the other side of the map
+                Action ac = new Action(
+                                    "Drop " + currentPath.CurrentItem.objectType,
+                                    10,
+                                    currentPath.CurrentTile);
+
+                currentPath.CurrentItem = null;
+
+                return ac;
+            }
+
+            return null;
         }
 
         private List<Action> SmeltAction(Needs conditions, Path currentPath)

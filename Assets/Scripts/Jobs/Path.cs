@@ -54,6 +54,11 @@ namespace ProjectPorcupine.Jobs
             InventoryOverride = other.InventoryOverride.Clone();
             InventoryOverride.AddAction(action);
 
+            if (other.CurrentItem == null)
+                CurrentItem = null;
+            else
+                CurrentItem = other.CurrentItem.Clone();
+
             Actions.Enqueue(action);
         }
 
@@ -89,6 +94,8 @@ namespace ProjectPorcupine.Jobs
                 return action != null ? action.Tile : null;
             }
         }
+
+        public Inventory CurrentItem;
 
         /// <summary>
         /// Determines whether we have fulfilled every requirement.

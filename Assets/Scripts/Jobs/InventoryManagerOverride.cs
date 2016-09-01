@@ -52,6 +52,9 @@ namespace ProjectPorcupine.Jobs
         {
             Assert.IsTrue(action.Provides.Count <= 1 && action.Requires.Count <= 1);
 
+            if (action.Provides.Count < 1)
+                return;
+
             if (action.Tile.Inventory != null)
             {
                 string objectType = action.Provides.FirstKey();

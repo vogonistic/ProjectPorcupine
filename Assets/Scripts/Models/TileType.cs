@@ -259,6 +259,7 @@ public class TileType : IXmlSerializable
                         Job.JobPriority.High,
                         false,
                         true);
+                    j.adjacent = true;
                     j.JobDescription = "job_build_floor_" + this;
 
                     tileTypeBuildJobPrototypes[this] = j;

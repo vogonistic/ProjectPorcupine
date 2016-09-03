@@ -495,6 +495,7 @@ public class Furniture : IXmlSerializable, ISelectable, IContextActionProvider
                     jobTime,
                     invs.ToArray(),
                     Job.JobPriority.High);
+                j.adjacent = true;
                 j.JobDescription = "job_build_" + ObjectType + "_desc";
                     PrototypeManager.FurnitureJob.SetPrototype(ObjectType, j);
                 break;

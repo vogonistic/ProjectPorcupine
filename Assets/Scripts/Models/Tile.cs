@@ -23,6 +23,7 @@ public enum Enterability
 }
 
 [MoonSharpUserData]
+[System.Diagnostics.DebuggerDisplay("Tile {X},{Y}")]
 public class Tile : IXmlSerializable, ISelectable, IContextActionProvider
 {
     private TileType type = TileType.Empty;

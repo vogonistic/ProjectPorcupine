@@ -113,6 +113,7 @@ public class BuildModeController
                 {
                     Debug.ULogErrorChannel("BuildModeController", "There is no furniture job prototype for '" + furnitureType + "'");
                     j = new Job(t, furnitureType, FurnitureActions.JobComplete_FurnitureBuilding, 0.1f, null, Job.JobPriority.High);
+                    j.adjacent = true;
                     j.JobDescription = "job_build_" + furnitureType + "_desc";
                 }
 

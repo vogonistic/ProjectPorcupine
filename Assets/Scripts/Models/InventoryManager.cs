@@ -129,8 +129,8 @@ public class InventoryManager
     /// <param name="desiredAmount">Desired amount. If no stack has enough, it instead returns the largest.</param>
     public Inventory GetClosestInventoryOfType(string objectType, Tile t, int desiredAmount, bool canTakeFromStockpile)
     {
-        Path_AStar path = GetPathToClosestInventoryOfType(objectType, t, desiredAmount, canTakeFromStockpile);
-        return path.EndTile().Inventory;
+        List<Tile> path = GetPathToClosestInventoryOfType(objectType, t, desiredAmount, canTakeFromStockpile);
+        return path != null ? path.Last().Inventory : null;
     }
 
     public bool QuickCheck(string objectType)
@@ -160,7 +160,7 @@ public class InventoryManager
             {
                 if (onlyFromStockpiles)
                 {
-                    if (inventory.tile == null || 
+                    if (inventory.tile == null ||
                         inventory.tile.Furniture == null ||
                         inventory.tile.Furniture.ObjectType != "Stockpile")
                     {
@@ -183,7 +183,7 @@ public class InventoryManager
         return quantity == 0;
     }
 
-    public Path_AStar GetPathToClosestInventoryOfType(string objectType, Tile t, int desiredAmount, bool canTakeFromStockpile)
+    public List<Tile> GetPathToClosestInventoryOfType(string objectType, Tile tile, int desiredAmount, bool canTakeFromStockpile)
     {
         QuickCheck(objectType);
 
@@ -209,8 +209,7 @@ public class InventoryManager
         }
 
         // We know the objects are out there, now find the closest.
-        Path_AStar path = new Path_AStar(World.Current, t, null, objectType, desiredAmount, canTakeFromStockpile);
-        return path;
+        return ProjectPorcupine.Pathfinding.FindPathToInventory(tile, objectType, canTakeFromStockpile);
     }
 
     private void CleanupInventory(Inventory inv)

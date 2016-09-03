@@ -222,11 +222,11 @@ public class InventoryManager
 
         if (inventories[objectType].Count == 1)
         {
-            return new Path_AStar(World.Current, t, inventories[objectType][0].tile);
+            return Path_AStar.FindTile(t, inventories[objectType][0].tile);
         }
         else
         {
-            return new Path_AStar(World.Current, t, objectType, desiredAmount, canTakeFromStockpile);
+            return Path_AStar.FindInventory(t, objectType, desiredAmount, canTakeFromStockpile);
         }
     }
 

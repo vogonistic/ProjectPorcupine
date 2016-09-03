@@ -25,21 +25,21 @@ public class Path_AStar
         this.path = path;
     }
 
-    public Path_AStar(World world, Tile startTile, Tile endTile)
+    public static Path_AStar FindTile(Tile startTile, Tile endTile)
     {
-        Path_Node<Tile> goal = world.tileGraph.nodes[endTile];
+        Path_Node<Tile> goal = World.Current.tileGraph.nodes[endTile];
 
         GoalReachedEvaluator hasReachedGoal = currentPathNode => currentPathNode == goal;
-        CostEstimator costHeuristic = currentPathNode => Heuristic_cost_estimate(currentPathNode, goal);
+        CostEstimator costHeuristic = currentPathNode => ManhattanDistance(currentPathNode.data, goal.data);
 
-        Run(world, startTile, hasReachedGoal, costHeuristic);
+        return new Path_AStar(World.Current, startTile, hasReachedGoal, costHeuristic);
     }
 
-    public Path_AStar(World world, Tile startTile, string objectType, int desiredAmount = 0, bool canTakeFromStockpile = false, bool lookingForFurn = false)
+    public static Path_AStar FindInventory(Tile startTile, string objectType, int desiredAmount = 0, bool canTakeFromStockpile = false)
     {
         GoalReachedEvaluator hasReachedGoal = current =>
         {
-            if (current.data.Inventory != null && current.data.Inventory.objectType == objectType && lookingForFurn == false && current.data.Inventory.locked == false)
+            if (current.data.Inventory != null && current.data.Inventory.objectType == objectType && current.data.Inventory.locked == false)
             {
                 // Type is correct and we are allowed to pick it up
                 if (canTakeFromStockpile || current.data.Furniture == null || current.data.Furniture.IsStockpile() == false)
@@ -48,8 +48,19 @@ public class Path_AStar
                     return true;
                 }
             }
-    
-            if (current.data.Furniture != null && current.data.Furniture.ObjectType == objectType && lookingForFurn)
+
+            return false;
+        };
+        CostEstimator costHeuristic = currentPathNode => 0f;
+
+        return new Path_AStar(World.Current, startTile, hasReachedGoal, costHeuristic);
+    }
+
+    public static Path_AStar FindFurniture(Tile startTile, string objectType)
+    {
+        GoalReachedEvaluator hasReachedGoal = current =>
+        {
+            if (current.data.Furniture != null && current.data.Furniture.ObjectType == objectType)
             {
                 // Type is correct
                 return true;
@@ -59,7 +70,7 @@ public class Path_AStar
         };
         CostEstimator costHeuristic = currentPathNode => 0f;
 
-        Run(world, startTile, hasReachedGoal, costHeuristic);
+        return new Path_AStar(World.Current, startTile, hasReachedGoal, costHeuristic);
     }
 
     public Path_AStar(World world, Tile startTile, GoalReachedEvaluator hasReachedGoal, CostEstimator costHeuristic)
@@ -227,6 +238,11 @@ public class Path_AStar
 
         // We don't have a failure state, maybe? It's just that the
         // path list will be null.
+    }
+
+    public static float ManhattanDistance(Tile current, Tile goal)
+    {
+        return Mathf.Abs(current.X - goal.X) + Mathf.Abs(current.Y - goal.Y);
     }
 
     private float Heuristic_cost_estimate(Path_Node<Tile> a, Path_Node<Tile> b)

@@ -298,7 +298,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
 
         MyJob.OnJobStopped += OnJobStopped;
 
-        pathAStar = new Path_AStar(World.Current, CurrTile, DestTile);
+        pathAStar = Path_AStar.FindTile(CurrTile, DestTile);
 
         if (pathAStar != null && pathAStar.Length() == 0)
         {
@@ -642,11 +642,11 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
         else if (MyJob.IsNeed)
         {
             // This will calculate a path from curr to dest.
-            pathAStar = new Path_AStar(World.Current, CurrTile, need.RestoreNeedFurn.ObjectType, 0, false, true);
+            pathAStar = Path_AStar.FindFurniture(CurrTile, need.RestoreNeedFurn.ObjectType);
         }
         else
         {
-            pathAStar = new Path_AStar(World.Current, CurrTile, DestTile);
+            pathAStar = Path_AStar.FindTile(CurrTile, DestTile);
         }
 
         Profiler.EndSample();
@@ -726,7 +726,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
 
         if (MyJob != null && MyJob.IsNeed && MyJob.Critical == false)
         {
-            MyJob.tile = jobTile = new Path_AStar(World.Current, CurrTile, MyJob.JobObjectType, 0, false, true).EndTile();
+            MyJob.tile = jobTile = Path_AStar.FindFurniture(CurrTile, MyJob.JobObjectType).EndTile();
         }
 
         if (MyJob == null || MyJob.MaterialNeedsMet())
@@ -910,7 +910,7 @@ public class Character : IXmlSerializable, ISelectable, IContextActionProvider
             {
                 // Generate a path to our destination.
                 // This will calculate a path from curr to dest.
-                pathAStar = new Path_AStar(World.Current, CurrTile, DestTile);
+                pathAStar = Path_AStar.FindTile(CurrTile, DestTile);
                 if (pathAStar.Length() == 0)
                 {
                     Debug.ULogErrorChannel("Character", "Path_AStar returned no path to destination!");

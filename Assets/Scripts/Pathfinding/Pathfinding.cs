@@ -1,4 +1,13 @@
-﻿using System.Collections.Generic;
+﻿#region License
+// ====================================================
+// Project Porcupine Copyright(C) 2016 Team Porcupine
+// This program comes with ABSOLUTELY NO WARRANTY; This is free software,
+// and you are welcome to redistribute it under certain conditions; See
+// file LICENSE, which is part of this source code package, for details.
+// ====================================================
+#endregion
+
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -7,15 +16,15 @@ namespace ProjectPorcupine
     public static class Pathfinding
     {
         /// <summary>
-        /// Delegate called to determine the distance from this tile to destination according to custom heuristics
+        /// Delegate called to determine the distance from this tile to destination according to custom heuristics.
         /// </summary>
-        /// <param name="tile">Tile to evalute</param>
+        /// <param name="tile">Tile to evalute.</param>
         public delegate float PathfindingHeuristic(Tile tile);
 
         /// <summary>
-        /// Delegate called to determine if we've reached the goal
+        /// Delegate called to determine if we've reached the goal.
         /// </summary>
-        /// <param name="tile">Tile to evaluate</param>
+        /// <param name="tile">Tile to evaluate.</param>
         public delegate bool GoalEvaluator(Tile tile);
 
         public static List<Tile> FindPath(Tile start, GoalEvaluator isGoal, PathfindingHeuristic costHeuristic)
@@ -29,11 +38,16 @@ namespace ProjectPorcupine
         /// </summary>
         /// <returns>The path to tile.</returns>
         /// <param name="start">Start tile.</param>
-        /// <param name="end">End tile.</param>
+        /// <param name="end">Final tile.</param>
         /// <param name="adjacent">If set to <c>true</c> adjacent tiles can be targetted.</param>
         public static List<Tile> FindPathToTile(Tile start, Tile end, bool adjacent = false)
         {
-            Path_AStar resolver = new Path_AStar(World.Current, start, GoalTileHeuristic(end, adjacent), ManhattenDistance(end));
+            if (start == null || end == null)
+            {
+                return null;
+            }
+
+            Path_AStar resolver = new Path_AStar(World.Current, start, GoalTileHeuristic(end, adjacent), ManhattanDistance(end));
             List<Tile> path = resolver.GetList();
             if (adjacent)
             {
@@ -56,6 +70,11 @@ namespace ProjectPorcupine
         /// <param name="canTakeFromStockpile">If set to <c>true</c> can take from stockpile.</param>
         public static List<Tile> FindPathToInventory(Tile start, string objectType, bool canTakeFromStockpile = true)
         {
+            if (start == null || objectType == null)
+            {
+                return null;
+            }
+
             Path_AStar resolver = new Path_AStar(World.Current, start, GoalInventoryHeuristic(objectType, canTakeFromStockpile), DijkstraDistance());
             List<Tile> path = resolver.GetList();
             Debug.ULogChannel("Pathfinding", "Searched from: " + start.X + "," + start.Y + ", for: " + objectType + " found: " + path.Last().X + "," + path.Last().Y + " [Length: " + path.Count + "]");
@@ -70,6 +89,11 @@ namespace ProjectPorcupine
         /// <param name="objectType">Object type of the furniture.</param>
         public static List<Tile> FindPathToFurniture(Tile start, string objectType)
         {
+            if (start == null || objectType == null)
+            {
+                return null;
+            }
+
             Path_AStar resolver = new Path_AStar(World.Current, start, GoalFurnitureHeuristic(objectType), DijkstraDistance());
             List<Tile> path = resolver.GetList();
             Debug.ULogChannel("Pathfinding", "Searched from: " + start.X + "," + start.Y + ", for: " + objectType + " found: " + path.Last().X + "," + path.Last().Y + " [Length: " + path.Count + "]");
@@ -92,8 +116,7 @@ namespace ProjectPorcupine
 
                 return tile => (
                     tile.X >= minX && tile.X <= maxX &&
-                    tile.Y >= minY && tile.Y <= maxY
-                );
+                    tile.Y >= minY && tile.Y <= maxY);
             }
             else
             {
@@ -102,16 +125,16 @@ namespace ProjectPorcupine
         }
 
         /// <summary>
-        /// ManhattenDistance measurement
+        /// ManhattanDistance measurement.
         /// </summary>
         /// <param name="goalTile">Goal tile.</param>
-        public static PathfindingHeuristic ManhattenDistance(Tile goalTile)
+        public static PathfindingHeuristic ManhattanDistance(Tile goalTile)
         {
             return tile => Mathf.Abs(tile.X - goalTile.X) + Mathf.Abs(tile.Y - goalTile.Y);
         }
 
         /// <summary>
-        /// Evaluates if the goal is an inventory of the right type 
+        /// Evaluates if the goal is an inventory of the right type.
         /// </summary>
         /// <param name="objectType">Inventory's object type.</param>
         /// <param name="canTakeFromStockpile">If set to <c>true</c> can take from stockpile.</param>
@@ -136,7 +159,7 @@ namespace ProjectPorcupine
         }
 
         /// <summary>
-        /// Evaluates if the goal is a furniture of the right type 
+        /// Evaluates if the goal is a furniture of the right type.
         /// </summary>
         /// <param name="objectType">Inventory's object type.</param>
         public static GoalEvaluator GoalFurnitureHeuristic(string objectType)
@@ -153,4 +176,3 @@ namespace ProjectPorcupine
         }
     }
 }
-

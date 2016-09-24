@@ -7,14 +7,16 @@
 // ====================================================
 #endregion
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
+using Animation;
 using UnityEngine;
 
-public class TraderPrototype
+public class TraderPrototype : IPrototypable
 {
     private float rarity;
 
-    public string ObjectType { get; set; }
+    public string Type { get; set; }
 
     public List<string> PotentialNames { get; set; }
 
@@ -29,6 +31,10 @@ public class TraderPrototype
     public float MaxSaleMarginMultiplier { get; set; }
 
     public List<TraderPotentialInventory> PotentialStock { get; set; }
+
+    public SpritenameAnimation AnimationIdle { get; set; }
+
+    public SpritenameAnimation AnimationFlying { get; set; }
 
     /// <summary>
     /// Value from 0 to 1, higher value represent higher availability of the trade resource.
@@ -48,7 +54,7 @@ public class TraderPrototype
 
     public void ReadXmlPrototype(XmlReader reader_parent)
     {
-        ObjectType = reader_parent.GetAttribute("objectType");
+        Type = reader_parent.GetAttribute("type");
 
         XmlReader reader = reader_parent.ReadSubtree();
 
@@ -58,13 +64,13 @@ public class TraderPrototype
             {
                 case "potentialNames":
                     PotentialNames = new List<string>();
-                    XmlReader names_reader = reader.ReadSubtree();
+                    XmlReader namesReader = reader.ReadSubtree();
 
-                    while (names_reader.Read())
+                    while (namesReader.Read())
                     {
-                        if (names_reader.Name == "name")
+                        if (namesReader.Name == "name")
                         {
-                            PotentialNames.Add(names_reader.Value);
+                            PotentialNames.Add(namesReader.ReadElementContentAsString());
                         }
                     }
 
@@ -101,7 +107,8 @@ public class TraderPrototype
                             // Found an inventory requirement, so add it to the list!
                             PotentialStock.Add(new TraderPotentialInventory
                             {
-                                ObjectType = invs_reader.GetAttribute("objectType"),
+                                Type = invs_reader.GetAttribute("type"),
+                                Category = invs_reader.GetAttribute("category"),
                                 MinQuantity = int.Parse(invs_reader.GetAttribute("minQuantity")),
                                 MaxQuantity = int.Parse(invs_reader.GetAttribute("maxQuantity")),
                                 Rarity = float.Parse(invs_reader.GetAttribute("rarity"))
@@ -110,10 +117,14 @@ public class TraderPrototype
                     }
 
                     break;
+                case "Animations":
+                    XmlReader animationReader = reader.ReadSubtree();
+                    ReadAnimationXml(animationReader);
+                    break;
             }
         }
     }
-
+    
     /// <summary>
     /// Create a random Trader out of this TraderPrototype.
     /// </summary>
@@ -138,14 +149,76 @@ public class TraderPrototype
 
             if (itemIsInStock)
             {
-                t.Stock.Add(new Inventory
+                if (!string.IsNullOrEmpty(potentialStock.Type))
                 {
-                    ObjectType = potentialStock.ObjectType,
-                    StackSize = Random.Range(potentialStock.MinQuantity, potentialStock.MaxQuantity)
-                });
+                    Inventory inventory = new Inventory(
+                        potentialStock.Type,
+                        Random.Range(potentialStock.MinQuantity, potentialStock.MaxQuantity));
+
+                    t.Stock.Add(inventory);
+                }
+                else if (!string.IsNullOrEmpty(potentialStock.Category))
+                {
+                    List<InventoryCommon> potentialObjects = GetInventoryCommonWithCategory(potentialStock.Category);
+
+                    foreach (InventoryCommon potentialObject in potentialObjects)
+                    {
+                        Inventory inventory = new Inventory(
+                            potentialObject.type,
+                            Random.Range(potentialStock.MinQuantity, potentialStock.MaxQuantity));
+
+                        t.Stock.Add(inventory);
+                    }
+                }
             }
         }
 
         return t;
+    }
+
+    /// <summary>
+    /// Reads and creates Animations from the prototype xml. 
+    /// For now, this requires an idle animation and a flying animation state.
+    /// </summary>
+    private void ReadAnimationXml(XmlReader animationReader)
+    {
+        while (animationReader.Read())
+        {
+            if (animationReader.Name == "Animation")
+            {
+                string state = animationReader.GetAttribute("state");
+                float fps = 1;
+                float.TryParse(animationReader.GetAttribute("fps"), out fps);
+                bool looping = true;
+                bool.TryParse(animationReader.GetAttribute("looping"), out looping);
+                bool valueBased = false;
+
+                // read frames
+                XmlReader frameReader = animationReader.ReadSubtree();
+                List<string> framesSpriteNames = new List<string>();
+                while (frameReader.Read())
+                {
+                    if (frameReader.Name == "Frame")
+                    {
+                        framesSpriteNames.Add(frameReader.GetAttribute("name"));
+                    }
+                }
+
+                switch (state)
+                {
+                    case "idle":
+                        AnimationIdle = new SpritenameAnimation(state, framesSpriteNames.ToArray(), fps, looping, valueBased);
+                        break;
+                    case "flying":
+                        AnimationFlying = new SpritenameAnimation(state, framesSpriteNames.ToArray(), fps, looping, valueBased);
+                        break;
+                }
+            }
+        }
+    }
+
+    private List<InventoryCommon> GetInventoryCommonWithCategory(string category)
+    {
+        return PrototypeManager.Inventory.Values.Where(i => i.category == category).ToList();
     }
 }
